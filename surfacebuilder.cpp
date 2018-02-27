@@ -69,7 +69,7 @@ void SurfaceBuilder::FormatHeightsToMesh(QVector<float> heightsArray)
     float x=0,
           y=0;
 
-    x = parser->Image.rowCount-1;  // because points start from left-top corner of map
+    x = parser->Image.rowCount;  // because points start from left-top corner of map
 
     for (uint i=0; i < heightsArray.size()-parser->Image.colCount-1; i++) {
 
@@ -224,4 +224,54 @@ void SurfaceBuilder::CreateObject()
 
     parser->deleteLater();
     this->deleteLater();
+}
+
+void SurfaceBuilder::CreateMTW()
+{
+    // FOR DEBUG PURPOSES
+
+    HMAP hMap = 0;
+    BUILDMTW mtw;
+
+
+    hMap = mapOpenData( "/home/fuego/Podolsk/Podolsk.map" );
+
+    if (hMap) {
+        qDebug() << 2;
+
+        memset(&mtw, 0x0, sizeof(BUILDMTW) );
+
+        double x1, y1, x2, y2;
+
+        x1 = 6134135; //mapGetMapX1(hMap);
+        y1 = 7404041; //mapGetMapY1(hMap);
+        x2 = mapGetMapX2(hMap);
+        y2 = mapGetMapY2(hMap);
+
+        qDebug() << x1 << y1;
+        qDebug() << x2 - x1 << y2 -y1;
+
+        mtw.StructSize = sizeof(BUILDMTW);
+
+        mtw.BeginX = x1;
+        mtw.BeginY = y1;
+        mtw.Width = 33297; //(y2 - y1);
+        mtw.Height = 39211; //(x2 - x1);
+
+        mtw.ElemSizeMeters = 30;
+        mtw.ElemSizeBytes = 4;
+        mtw.Unit = 3;
+        mtw.ReliefType = 0;
+
+        memset(mtw.Reserve, 0x0, 20);
+
+        mtw.Method = 0;
+        mtw.Extremum = 0;
+
+
+        qDebug() << mapBuildMtw(hMap, "/home/fuego/Podolsk/Podolsk.mtw", 0, &mtw, 0);
+    }
+
+    mapCloseData(hMap);
+
 }

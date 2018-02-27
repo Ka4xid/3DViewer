@@ -15,6 +15,7 @@ public:
     SurfaceBuilder(QObject *parent = 0);
 
     int GenerateSurface(QString mtwFilePath, QString mapFilePath, uint textureScale = 100000 ); // Build surface mesh, based on height map
+    void CreateMTW();
 
 signals:
 
