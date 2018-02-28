@@ -45,37 +45,181 @@ int GLHandler::BuildTrajectory(QString name, QVector<QVector3D> points)
 
     QVector<QVector3D> pointsCloud;
     QVector<QVector2D> textureCoords;
-    QQuaternion quaternion;
-    QVector3D rotatedVector;
 
 
-    quaternion = QQuaternion(QVector4D(0,0,1,90));
+    // GENERATING QUADS
+    QQuaternion quat_yaw,
+                quat_pitch,
+                quat_summ_first,
+                quat_summ_second;
 
-    for (int i=0; i<points.size()-1; i++) {
+    float angle;
+    QVector3D firstPoint;
+    QVector3D secondPoint;
+    QVector3D relativeVector;
 
-        //quaternion.setVector(points.at(i) - points.at(i+1));
+    float size = 3;
 
-        /*pointsCloud.append(QVector3D(points.at(i).x(),
-                                     points.at(i).y(),
-                                     points.at(i).z() ));
 
-        pointsCloud.append(QVector3D(points.at(i).x(),
-                                     points.at(i).y(),
-                                     points.at(i).z()+50 ));
+    // GENERATE QUADS FOR FIRST TWO POINTS OF TRAJECTORY
+    {
+        firstPoint = points.at(0);
+        secondPoint = points.at(1);
 
-        pointsCloud.append(QVector3D(points.at(i+1).x(),
-                                     points.at(i+1).y(),
-                                     points.at(i+1).z() ));
+        relativeVector = points.at(1) - points.at(0);
 
-        pointsCloud.append(QVector3D(points.at(i+1).x(),
-                                     points.at(i+1).y(),
-                                     points.at(i+1).z()+50 ));*/
+        angle = atan2(relativeVector.y(), relativeVector.x()) * 57.2958;
+        quat_yaw = QQuaternion::fromAxisAndAngle(QVector3D(0,0,1), angle);
+        angle = atan2(relativeVector.toVector2D().length(), relativeVector.z()) * 57.2958;
+        quat_pitch = QQuaternion::fromAxisAndAngle(QVector3D(0,1,0), angle);
+
+        quat_summ_first = (quat_yaw * quat_pitch).normalized();
+
+        relativeVector = points.at(2) - points.at(0);
+
+        angle = atan2(relativeVector.y(), relativeVector.x()) * 57.2958;
+        quat_yaw = QQuaternion::fromAxisAndAngle(QVector3D(0,0,1), angle);
+        angle = atan2(relativeVector.toVector2D().length(), relativeVector.z()) * 57.2958;
+        quat_pitch = QQuaternion::fromAxisAndAngle(QVector3D(0,1,0), angle);
+
+        quat_summ_second = quat_yaw * quat_pitch;
+
+        // CREATING QUADS
+        // QUAD 1
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, -size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, -size, 0)) );
+
+        // QUAD 2
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, -size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, -size, 0)) );
+
+        // QUAD 3
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, size, 0)) );
+
+        // QUAD 4
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, -size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, -size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, -size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, -size, 0)) );
+    }
+
+    // GENERATE QUADS FOR MIDDLE POINTS OF TRAJECTORY
+    for (int i=1; i<(points.size()-2); i++) {
+
+        firstPoint = points.at(i);
+        secondPoint = points.at(i+1);
+
+        // CALCULATING ROTATIONS FOR FIRST POINT IN CYCLE
+
+        relativeVector = points.at(i+1) - points.at(i-1);
+
+        angle = atan2(relativeVector.y(), relativeVector.x()) * 57.2958;
+        quat_yaw = QQuaternion::fromAxisAndAngle(QVector3D(0,0,1), angle);
+        angle = atan2(relativeVector.toVector2D().length(), relativeVector.z()) * 57.2958;
+        quat_pitch = QQuaternion::fromAxisAndAngle(QVector3D(0,1,0), angle);
+
+        quat_summ_first = (quat_yaw * quat_pitch).normalized();
+
+        // CALCULATING ROTATIONS FOR SECOND POINT
+        relativeVector = points.at(i+2) - points.at(i);
+
+        angle = atan2(relativeVector.y(), relativeVector.x()) * 57.2958;
+        quat_yaw = QQuaternion::fromAxisAndAngle(QVector3D(0,0,1), angle);
+        angle = atan2(relativeVector.toVector2D().length(), relativeVector.z()) * 57.2958;
+        quat_pitch = QQuaternion::fromAxisAndAngle(QVector3D(0,1,0), angle);
+
+        quat_summ_second = quat_yaw * quat_pitch;
+
+
+        // CREATING QUADS
+        // QUAD 1
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, -size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, -size, 0)) );
+
+        // QUAD 2
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, -size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, -size, 0)) );
+
+        // QUAD 3
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, size, 0)) );
+
+        // QUAD 4
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, -size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, -size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, -size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, -size, 0)) );
+
+    }
+
+    // GENERATE QUADS FOR LAST TWO POINTS OF TRAJECTORY
+    {
+        // ROTATION FOR FIRST POINT
+        firstPoint = points.at(points.size()-2);
+        secondPoint = points.at(points.size()-1);
+
+        relativeVector = points.at(points.size()-1) - points.at(points.size()-3);
+
+        angle = atan2(relativeVector.y(), relativeVector.x()) * 57.2958;
+        quat_yaw = QQuaternion::fromAxisAndAngle(QVector3D(0,0,1), angle);
+        angle = atan2(relativeVector.toVector2D().length(), relativeVector.z()) * 57.2958;
+        quat_pitch = QQuaternion::fromAxisAndAngle(QVector3D(0,1,0), angle);
+
+        quat_summ_first = (quat_yaw * quat_pitch).normalized();
+
+        relativeVector = points.at(points.size()-1) - points.at(points.size()-2);
+
+        angle = atan2(relativeVector.y(), relativeVector.x()) * 57.2958;
+        quat_yaw = QQuaternion::fromAxisAndAngle(QVector3D(0,0,1), angle);
+        angle = atan2(relativeVector.toVector2D().length(), relativeVector.z()) * 57.2958;
+        quat_pitch = QQuaternion::fromAxisAndAngle(QVector3D(0,1,0), angle);
+
+        quat_summ_second = quat_yaw * quat_pitch;
+
+        // CREATING QUADS
+        // QUAD 1
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, -size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, -size, 0)) );
+
+        // QUAD 2
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, -size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, -size, 0)) );
+
+        // QUAD 3
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, size, 0)) );
+
+        // QUAD 4
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(-size, -size, 0)) );
+        pointsCloud.append( firstPoint + quat_summ_first.rotatedVector(QVector3D(size, -size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(size, -size, 0)) );
+        pointsCloud.append( secondPoint + quat_summ_second.rotatedVector(QVector3D(-size, -size, 0)) );
+
     }
 
 
-    for(int i=0; i<points.size(); i++) {
-        textureCoords.append(QVector2D(0.1,
-                                       0.2) );
+    // GENERATE TEXTURE COORDS
+    foreach (QVector3D point, pointsCloud) {
+        textureCoords.append(QVector2D(0.1, 0.25));
     }
 
     Trajectory_object->SetPointsArray(pointsCloud);
