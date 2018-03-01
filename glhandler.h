@@ -17,7 +17,7 @@ public:
 
     int BuildSurface(QString mtwFilePath, QString mapFilePath, uint textureScale = 100000);                  // Build surface mesh, based on height map
 
-    int BuildTrajectory(QString name, QVector<QVector3D> points);        // Build trajectory mesh
+    int BuildTrajectory(QString name, QVector<QVector3D> points, float thickness = 5);        // Build trajectory mesh
 
     void keyPressEvent(QKeyEvent *e);                       //
     void keyReleaseEvent(QKeyEvent *e);                     //
@@ -58,8 +58,9 @@ private:
     MyGLWidget* widget;
     SurfaceBuilder *builder;
 
-    void CreateSphereAtPoint(QVector<float> *pointsCloud, float x, float y, float z);       // generate octahedron at specified points
-
+    void CreateQuadsForPoints(QVector3D point0, QVector3D point1,
+                              QVector3D point2, QVector3D point3,
+                              QVector<QVector3D>* pointsCloud, float radius);
 
 };
 
