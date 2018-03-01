@@ -44,6 +44,7 @@ private:
             textureFilePath;
 
     QVector<QVector3D> pointsCloud;
+    QVector<QVector3D> normalsCloud;
     QVector<QVector2D> textureCloud;
 
     bool textureReadyFlag;

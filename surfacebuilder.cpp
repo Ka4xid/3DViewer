@@ -83,38 +83,47 @@ void SurfaceBuilder::FormatHeightsToMesh(QVector<float> heightsArray)
         pointsCloud.append(QVector3D((x) * parser->Image.elementMeters,
                                      (y) * parser->Image.elementMeters,
                                      heightsArray.at(i)));
-        pointsCloud.append(QVector3D((x) * parser->Image.elementMeters,
-                                     (y+1) * parser->Image.elementMeters,
-                                     heightsArray.at(i+1)));
         pointsCloud.append(QVector3D((x-1) * parser->Image.elementMeters,
                                      (y) * parser->Image.elementMeters,
                                      heightsArray.at(i+parser->Image.colCount)));
+        pointsCloud.append(QVector3D((x) * parser->Image.elementMeters,
+                                     (y+1) * parser->Image.elementMeters,
+                                     heightsArray.at(i+1)));
 
         // TRIANGLE 2
         pointsCloud.append(QVector3D((x) * parser->Image.elementMeters,
                                      (y+1) * parser->Image.elementMeters,
                                      heightsArray.at(i+1)));
         pointsCloud.append(QVector3D((x-1) * parser->Image.elementMeters,
-                                     (y+1) * parser->Image.elementMeters,
-                                     heightsArray.at(i+parser->Image.colCount+1)));
-        pointsCloud.append(QVector3D((x-1) * parser->Image.elementMeters,
                                      (y) * parser->Image.elementMeters,
                                      heightsArray.at(i+parser->Image.colCount)));
+        pointsCloud.append(QVector3D((x-1) * parser->Image.elementMeters,
+                                     (y+1) * parser->Image.elementMeters,
+                                     heightsArray.at(i+parser->Image.colCount+1)));
+
+        for (int n=0; n<6; n++) {
+            normalsCloud.append(QVector3D(0,
+                                          0,
+                                          1) );
+        }
+
+
 
 
         textureCloud.append(QVector2D(  (float)(y / parser->Image.colCount),
-                                        (float)((x / parser->Image.rowCount)) ));
-        textureCloud.append(QVector2D(  (float)((y+1) / parser->Image.colCount),
                                         (float)((x / parser->Image.rowCount)) ));
         textureCloud.append(QVector2D(  (float)(y / parser->Image.colCount),
                                         (float)(((x-1) / parser->Image.rowCount)) ));
+        textureCloud.append(QVector2D(  (float)((y+1) / parser->Image.colCount),
+                                        (float)((x / parser->Image.rowCount)) ));
+
 
         textureCloud.append(QVector2D(  (float)((y+1) / parser->Image.colCount),
                                         (float)((x / parser->Image.rowCount))      ));
-        textureCloud.append(QVector2D(  (float)((y+1) / parser->Image.colCount),
-                                        (float)(((x-1 )/ parser->Image.rowCount))  ));
         textureCloud.append(QVector2D(  (float)(y / parser->Image.colCount),
                                         (float)(((x-1) / parser->Image.rowCount)) ));
+        textureCloud.append(QVector2D(  (float)((y+1) / parser->Image.colCount),
+                                        (float)(((x-1 )/ parser->Image.rowCount))  ));
 
         y += 1;
     }
@@ -211,6 +220,7 @@ void SurfaceBuilder::CreateObject()
     Map->SetTranslation(QVector3D(parser->Image.leftBottomX, parser->Image.leftBottomY, 0));
     Map->SetScale( QVector3D(1,1,1) );
     Map->SetTexturePath(textureFilePath);
+    Map->SetNormalsArray(normalsCloud);
     Map->SetPointsArray(pointsCloud);
     Map->SetTexturesArray(textureCloud);
 
@@ -218,7 +228,7 @@ void SurfaceBuilder::CreateObject()
 
     emit SetCameraPos(parser->Image.leftBottomX + (parser->Image.rowCount * parser->Image.elementMeters / 2),
                       parser->Image.leftBottomY + (parser->Image.colCount * parser->Image.elementMeters / 2),
-                      10000);
+                      parser->Image.minHeight);
 
     emit SurfaceReady(Map);
 
