@@ -4,6 +4,7 @@
 
 Object_class::Object_class(QObject *parent) : QObject(parent)
 {
+    initializeGLFunctions();
     this->name = "na";
 
     this->translation = QVector3D(0,0,0);
@@ -47,6 +48,10 @@ Object_class::Object_class(QObject *parent) : QObject(parent)
 
     this->shaderValues = QMap<QString, float>();
 #endif
+
+
+
+
 }
 
 
@@ -215,10 +220,10 @@ void Object_class::Draw()
              this->scale.y(),
              this->scale.z() );
 
+
 #ifdef USE_SHADERS
     this->shader->bind();
-    this->shader->setAttributeArray(1, texcoords.data() );
-    this->shader->setUniformValue("texture", text);
+    this->shader->setUniformValue("texture", texture);
     foreach (QString key, this->shaderValues.keys()) {
         this->shader->setUniformValue( key.toUtf8().constData(), this->shaderValues.value(key, 0) );
     }
@@ -227,17 +232,32 @@ void Object_class::Draw()
 
     this->pointsCloud->bind();
     glVertexPointer(3, GL_FLOAT, 0, 0);
+    glVertexAttribPointer( this->shader->attributeLocation("vert_pos"),
+                                         3,
+                                         GL_FLOAT,
+                                         GL_FALSE,
+                                         0,
+                                         0);
+    glEnableVertexAttribArray(this->pointsCloud->bufferId() );
 
-    this->normalsCloud->bind();
-    glNormalPointer(GL_FLOAT, 0, 0);
+    //this->normalsCloud->bind();
+    //glNormalPointer(GL_FLOAT, 0, 0);
 
     this->textureCloud->bind();
     glTexCoordPointer(2, GL_FLOAT, 0, 0);
+    glVertexAttribPointer( this->shader->attributeLocation("texture_coord"),
+                           2,
+                           GL_FLOAT,
+                           GL_FALSE,
+                           0,
+                           0 );
+    glEnableVertexAttribArray(this->textureCloud->bufferId() );
 
     glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i( glGetUniformLocation(this->shader->programId(), "texture"), texture);
+
 
     glDrawArrays(this->polygonType, 0, numberOfPoints);
-
 
     this->normalsCloud->release();
     this->pointsCloud->release();

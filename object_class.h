@@ -1,13 +1,15 @@
 #ifndef OBJECT_CLASS_H
 #define OBJECT_CLASS_H
-//#include USE_SHADERS
+#define USE_SHADERS
 
 #include <QObject>
 #include <QGLBuffer>
 #include <QGLShader>
+#include <QGLFunctions>
 
 
-class Object_class : public QObject
+
+class Object_class : public QObject, private QGLFunctions
 {
     Q_OBJECT
 public:
@@ -81,6 +83,8 @@ private:
 
     GLuint texture;
 
+
+    GLuint v_attrib_position;
 };
 
 #endif // OBJECT_CLASS_H
