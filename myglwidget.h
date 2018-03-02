@@ -19,8 +19,7 @@ public:
 
     void keyPressEvent(QKeyEvent *e);                               //
     void keyReleaseEvent(QKeyEvent *e);                             //
-    void wheelEvent(QWheelEvent *e);
-    void mouseMoveEvent(QMouseEvent *e);                        //
+    void mouseMoveEvent(QMouseEvent *event);                        //
     void SetCameraPosition(float x, float y, float z);
 
 private:
@@ -45,9 +44,18 @@ public:
 
 private:
 
-    QVector3D free_camera_pos;
-    QVector3D orb_camera_pos;
-    QVector3D camera_angles;
+    float   camera_angle_pitch,         // camera rotations
+            camera_angle_yaw,           //
+            camera_angle_roll;          //
+
+    float   camera_translate_x,         // camera movements
+            camera_translate_y,         //
+            camera_translate_z;         //
+
+    float   fixed_camera_translation_x, // fixed camera transitions
+            fixed_camera_translation_y, //
+            fixed_camera_translation_z; //
+
 
     QPoint  lastPos;                // value for tracking last mouse position
 
@@ -55,8 +63,6 @@ private:
     bool wireframeMode;             // Wireframe drawing mode
     float colorModel;               // Height map coloring mode
     bool freeCamera;
-
-    float distaceFromCamera;
 
     GLuint texture;
 
