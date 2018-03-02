@@ -14,4 +14,6 @@ void main()
 
     vert_texture_coord = texture_coord;
     test = vert_pos;
+
+    test;
 }
