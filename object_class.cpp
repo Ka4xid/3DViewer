@@ -243,8 +243,9 @@ void Object_class::Draw()
     //this->normalsCloud->bind();
     //glNormalPointer(GL_FLOAT, 0, 0);
 
-    this->textureCloud->bind();
-    glTexCoordPointer(2, GL_FLOAT, 0, 0);
+    //this->textureCloud->bind();
+    //glTexCoordPointer(2, GL_FLOAT, 0, 0);
+    this->shader->setAttributeArray("vert_pos", GL_FLOAT, this->pointsCloud, 3, 0);
     glVertexAttribPointer( this->shader->attributeLocation("texture_coord"),
                            2,
                            GL_FLOAT,
@@ -253,8 +254,10 @@ void Object_class::Draw()
                            0 );
     glEnableVertexAttribArray(this->textureCloud->bufferId() );
 
-    glBindTexture(GL_TEXTURE_2D, texture);
     glUniform1i( glGetUniformLocation(this->shader->programId(), "texture"), texture);
+
+    this->shader->setUniformValue("texture", texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
 
     glDrawArrays(this->polygonType, 0, numberOfPoints);
