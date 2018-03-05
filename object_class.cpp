@@ -232,29 +232,16 @@ void Object_class::Draw()
 
     this->pointsCloud->bind();
     glVertexPointer(3, GL_FLOAT, 0, 0);
-    glVertexAttribPointer( this->shader->attributeLocation("vert_pos"),
-                                         3,
-                                         GL_FLOAT,
-                                         GL_FALSE,
-                                         0,
-                                         0);
-    glEnableVertexAttribArray(this->pointsCloud->bufferId() );
 
-    //this->normalsCloud->bind();
-    //glNormalPointer(GL_FLOAT, 0, 0);
+    this->normalsCloud->bind();
+    glNormalPointer(GL_FLOAT, 0, 0);
 
     this->textureCloud->bind();
     glTexCoordPointer(2, GL_FLOAT, 0, 0);
-    glVertexAttribPointer( this->shader->attributeLocation("texture_coord"),
-                           2,
-                           GL_FLOAT,
-                           GL_FALSE,
-                           0,
-                           0 );
+
     glEnableVertexAttribArray(this->textureCloud->bufferId() );
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    glUniform1i( glGetUniformLocation(this->shader->programId(), "texture"), texture);
 
 
     glDrawArrays(this->polygonType, 0, numberOfPoints);

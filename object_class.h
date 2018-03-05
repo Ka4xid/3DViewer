@@ -1,6 +1,6 @@
 #ifndef OBJECT_CLASS_H
 #define OBJECT_CLASS_H
-#define USE_SHADERS
+//#define USE_SHADERS
 
 #include <QObject>
 #include <QGLBuffer>
