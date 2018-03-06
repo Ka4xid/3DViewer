@@ -8,6 +8,9 @@
 #include <QGLFunctions>
 
 
+typedef void (APIENTRY *_glGenVertexArrays)(GLsizei, GLuint*);
+typedef void (APIENTRY *_glBindVertexArray)(GLuint);
+
 
 class Object_class : public QObject, private QGLFunctions
 {
@@ -38,7 +41,14 @@ public:
     uint GetPolygonType();
 
     //
-    void SetPointsArray(QVector<QVector3D> newPointsVectors);
+    void SetPointsVector(QVector<QVector3D> p_Coords,
+                         QVector<QVector3D> p_Normals,
+                         QVector<QVector2D> p_Texels,
+                         QVector<uint> p_indices );
+    void SetPointsVector(QVector<float> p_Data,
+                         QVector<uint> p_Indices );
+
+    void SetPointsArray(QVector<QVector3D> pointsCloud);
     void SetNormalsArray(QVector<QVector3D> newNormalsVectors);
     void SetTexturesArray(QVector<QVector2D> newTextureVectors);
 #ifdef USE_SHADERS
@@ -60,7 +70,10 @@ private:
     QString name;
     QString texturePath;
 
-    QGLWidget *context;
+    // QT crutch, because this functions are not implemented in QOpenGlFunctions
+    _glGenVertexArrays glGenVertexArrays = NULL;
+    _glBindVertexArray glBindVertexArray = NULL;
+
 
     QVector3D translation,
               rotation,
@@ -71,6 +84,13 @@ private:
     QGLBuffer* pointsCloud;
     QGLBuffer* normalsCloud;
     QGLBuffer* textureCloud;
+
+    GLuint VAO, VBO, EBO;
+    QGLBuffer* vertexData;
+    QGLBuffer* vertexIndices;
+
+    QVector<float> p_Data;
+    QVector<uint> p_Indices;
 
     QVector<QVector2D> texcoords;
 

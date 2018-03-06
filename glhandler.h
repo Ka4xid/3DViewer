@@ -4,7 +4,7 @@
 #include <QObject>
 #include "myglwidget.h"
 #include "surfacebuilder.h"
-#include "3D_viewer/object_class.h"
+#include "object_class.h"
 
 class GLHandler : public QObject
 {

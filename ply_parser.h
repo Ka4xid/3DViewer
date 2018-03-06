@@ -1,20 +1,16 @@
-#ifndef OBJ_PARSER_H
-#define OBJ_PARSER_H
+#ifndef PLY_PARSER_H
+#define PLY_PARSER_H
 
 #include <QObject>
 #include <QFile>
 #include "object_class.h"
 
-
-class obj_parser : public QObject
+class ply_parser : public QObject
 {
     Q_OBJECT
 public:
-
-    obj_parser(Object_class* Object_pointer = 0);
+    ply_parser(Object_class* Object_pointer = 0);
     int ReadObject(QString fileName);
-
-
 
 private:
 
@@ -28,10 +24,10 @@ private:
 
     Object_class* Object;
 
-signals:
 
+signals:
     void ObjectReady(Object_class* Object);
 
 };
 
-#endif // OBJ_PARSER_H
+#endif // PLY_PARSER_H

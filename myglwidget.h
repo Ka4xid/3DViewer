@@ -7,7 +7,7 @@
 #include <QGLShader>
 #include <QPoint>
 #include <QGLFunctions>
-#include <3D_viewer/object_class.h>
+#include "3D_viewer/object_class.h"
 
 
 
@@ -23,6 +23,7 @@ public:
     void mouseMoveEvent(QMouseEvent *e);                        //
     void SetCameraPosition(float x, float y, float z);
 
+
 private:
 
     void handleKeys();
@@ -30,7 +31,6 @@ private:
     void resizeGL(int width, int height);               //
     void paintGL();                                     //
     void SetPerspective(float fov, float Znear, float Zfar, float aspect);  // set perspective view
-
 
     void RenderObjectsArray();                          // render objects from ObjectsArray
 
@@ -51,14 +51,11 @@ private:
 
     QPoint  lastPos;                // value for tracking last mouse position
 
-
     bool wireframeMode;             // Wireframe drawing mode
     float colorModel;               // Height map coloring mode
     bool freeCamera;
 
     float distaceFromCamera;
-
-    GLuint texture;
 
     QMap<int, int> keyMap;          // Used for handling simlutaneous key presses
 };
