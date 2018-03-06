@@ -1,14 +1,16 @@
 #version 130
 
 
-attribute vec3 vert_pos;
-attribute vec2 texture_coord;
-varying vec2 vert_texture_coord;
+in vec3 Vert_Pos;
+in vec3 Vert_Norm;
+in vec2 Vert_Texel;
+
+out vec2 Vert_uv;
 
 
 void main()
 {
-    gl_Position = gl_ModelViewProjectionMatrix * vec4(vert_pos,1);
+    gl_Position = gl_ModelViewProjectionMatrix * vec4(Vert_Pos, 1);
 
-    vert_texture_coord = texture_coord;
+    Vert_uv = vec2(Vert_Texel);
 }

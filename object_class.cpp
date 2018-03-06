@@ -244,10 +244,8 @@ void Object_class::Initialize(QGLWidget *context)
 {
     texture = context->bindTexture(QImage(texturePath), GL_TEXTURE_2D);
 
-    qDebug() << glGenVertexArrays;
     glGenVertexArrays = (_glGenVertexArrays)context->context()->getProcAddress("glGenVertexArrays");
     glBindVertexArray = (_glBindVertexArray)context->context()->getProcAddress("glBindVertexArray");
-    qDebug() << glGenVertexArrays;
 
 
     glGenVertexArrays(1, &VAO);
@@ -260,14 +258,17 @@ void Object_class::Initialize(QGLWidget *context)
         this->vertexIndices->allocate( p_Indices.constData(), p_Indices.size() * sizeof(uint) );
 
         // Position
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
-        glEnableVertexAttribArray(0);
+        int pos_locations = this->shader->attributeLocation("Vert_Pos");
+        glVertexAttribPointer(pos_locations, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(pos_locations);
         // Normals
-        /*glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (GLvoid*)(3 * sizeof(GLfloat)) );
-        glEnableVertexAttribArray(1);*/
+        int normals_location = this->shader->attributeLocation("Vert_Norm");
+        glVertexAttribPointer(normals_location, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)) );
+        glEnableVertexAttribArray(normals_location);
         // Texels
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)) );
-        glEnableVertexAttribArray(2);
+        int texels_location = this->shader->attributeLocation("Vert_Texel");
+        glVertexAttribPointer(texels_location, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)) );
+        glEnableVertexAttribArray(texels_location);
 
     glBindVertexArray(0);
 }
@@ -287,11 +288,11 @@ void Object_class::Draw()
              this->scale.z() );
 
 
-
-    glBindTexture(GL_TEXTURE_2D, texture);
 #ifdef USE_SHADERS
     this->shader->bind();
 #endif
+
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     glBindVertexArray(VAO);
     glDrawElements(this->polygonType, numberOfPoints, GL_UNSIGNED_INT, 0);
