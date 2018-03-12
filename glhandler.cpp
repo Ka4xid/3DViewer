@@ -3,13 +3,20 @@
 #include <qmath.h>
 #include <QQuaternion>
 
+#include "surface_builder.h"
+#include "trajectory_builder.h"
+#include "object_builder.h"
+
+
 
 #define DEBUG_OUTPUT
 
 GLHandler::GLHandler(QObject *parent) : QObject(parent)
 {
-    widget = new MyGLWidget();
+    qRegisterMetaType< QVector<float> >("QVector<float>");
+    qRegisterMetaType< QVector<uint> >("QVector<uint>");
 
+    widget = new MyGLWidget();
     widget->setGeometry(0, 0, 1280, 720);
 }
 
@@ -19,17 +26,18 @@ QWidget* GLHandler::GetWidgetPointer() {
 
 void GLHandler::SetCameraPosition(float x, float y, float z)
 {
-    widget->SetCameraPosition(x, y, z);
+    widget->free_camera_pos = QVector3D(x,y,z);
+    widget->orb_camera_pos = QVector3D(x,y,z);
 }
 
 int GLHandler::BuildSurface(QString mtwFilePath, QString mapFilePath, uint textureScale)
 {
-    builder = new SurfaceBuilder(this);
+    Surface_Builder* builder = new Surface_Builder(this);
 
     connect(builder, SIGNAL(SetCameraPos(float,float,float)),
             this, SLOT(SetCameraPosition(float,float,float)));
     connect(builder, SIGNAL(SurfaceReady(Object_class*)),
-            this, SLOT(PushObjectToArray(Object_class*)) );
+            this, SLOT(AddObjectToScene(Object_class*)) );
 
     builder->GenerateSurface(mtwFilePath, mapFilePath, textureScale);
 
@@ -38,14 +46,13 @@ int GLHandler::BuildSurface(QString mtwFilePath, QString mapFilePath, uint textu
 
 int GLHandler::BuildTrajectory(QString name, QVector<QVector3D> points, float thickness)
 {
-    Object_class* Trajectory_object = new Object_class;
+    /*Object_class* Trajectory_object = new Object_class;
 
     Trajectory_object->SetName(name);
     Trajectory_object->SetPolygonType(GL_QUADS);
 
     QVector<QVector3D> pointsCloud;
     QVector<QVector2D> textureCoords;
-
 
     // GENERATE QUADS FOR FIRST TWO POINTS OF TRAJECTORY
     CreateQuadsForPoints(points.at(0), points.at(0),
@@ -66,7 +73,6 @@ int GLHandler::BuildTrajectory(QString name, QVector<QVector3D> points, float th
                          &pointsCloud, thickness);
 
 
-
     // GENERATE TEXTURE COORDS
     foreach (QVector3D point, pointsCloud) {
         point = point;
@@ -76,79 +82,86 @@ int GLHandler::BuildTrajectory(QString name, QVector<QVector3D> points, float th
     Trajectory_object->SetPointsArray(pointsCloud);
     Trajectory_object->SetTexturesArray(textureCoords);
 
-    PushObjectToArray(Trajectory_object);
+    AddObjectToScene(Trajectory_object);
 
-    return 1;
+    return 1;*/
 }
 
+Object_Builder* GLHandler::CreateObject()
+{
+    Object_Builder* builder = new Object_Builder(widget);
+    connect(builder, SIGNAL(ObjectReady(Object_class*)),
+            this, SLOT(AddObjectToScene(Object_class*)) );
+    return builder;
+}
 
-void GLHandler::PushObjectToArray(Object_class* newObject)
-{ 
-    newObject->Initialize(widget);    
+void GLHandler::AddObjectToScene(Object_class* newObject)
+{
+    newObject->Initialize(widget);
 
     widget->ObjectsArray.append(newObject);
 }
 
 void GLHandler::ScaleObject(QString name, QVector4D scale)
 {
-    int id;
+    /*int id;
     for (id=0; id < widget->ObjectsArray.size(); id++) {
-        if (widget->ObjectsArray.at(id)->GetName() == name) break;
+        if (widget->ObjectsArray.at(id)->name == name) break;
     }
 
-    ScaleObject(id, scale);
+    ScaleObject(id, scale);*/
 }
 void GLHandler::ScaleObject(int id, QVector4D scale)
 {
-    if ( (id < widget->ObjectsArray.size()) && (id >= 0) ) {
+    /*if ( (id < widget->ObjectsArray.size()) && (id >= 0) ) {
         widget->ObjectsArray[id]->SetScale(scale.toVector3D(), (bool)scale.w() );
-    }
+    }*/
 }
 
 void GLHandler::RotateObject(QString name, QVector4D rotation)
 {
-    int id;
+    /*int id;
     for (id=0; id < widget->ObjectsArray.size(); id++) {
         if (widget->ObjectsArray.at(id)->GetName() == name) break;
     }
 
-    RotateObject(id, rotation);
+    RotateObject(id, rotation);*/
 }
 void GLHandler::RotateObject(int id, QVector4D rotation)
 {
-    if ( (id < widget->ObjectsArray.size()) && (id >= 0) ) {
+    /*if ( (id < widget->ObjectsArray.size()) && (id >= 0) ) {
         widget->ObjectsArray[id]->SetRotation(rotation.toVector3D(), (bool)rotation.w() );
-    }
+    }*/
 }
 
 void GLHandler::TranslateObject(QString name, QVector4D translation)
 {
-    int id;
+    /*int id;
     for (id=0; id < widget->ObjectsArray.size(); id++) {
         if (widget->ObjectsArray.at(id)->GetName() == name) break;
     }
 
-    TranslateObject(id, translation);
+    TranslateObject(id, translation);*/
 }
 void GLHandler::TranslateObject(int id, QVector4D translation)
 {
-    if ( (id < widget->ObjectsArray.size()) && (id >= 0) ) {
+    /*if ( (id < widget->ObjectsArray.size()) && (id >= 0) ) {
         widget->ObjectsArray[id]->SetTranslation(translation.toVector3D(), (bool)translation.w());
-    }
+    }*/
 }
 
 void GLHandler::MoveObjectByDir(QString name, QVector4D vector)
 {
-    int id;
+    /*int id;
     for (id=0; id < widget->ObjectsArray.size(); id++) {
         if (widget->ObjectsArray.at(id)->GetName() == name) break;
     }
 
-    MoveObjectByDir(id, vector);
+    MoveObjectByDir(id, vector);*/
 }
 void GLHandler::MoveObjectByDir(int id, QVector4D vector)
 {
-    QVector4D rotation;
+    /*QVector4D rotation;
     QVector3D relativeVector;
     QVector3D currentPosition;
 
@@ -169,17 +182,17 @@ void GLHandler::MoveObjectByDir(int id, QVector4D vector)
 
     RotateObject(id, rotation);
 
-    TranslateObject(id, vector);
+    TranslateObject(id, vector);*/
 }
 
 void GLHandler::DeleteObject(QString name)
 {
-    int id;
+    /*int id;
 
     for (id=0; id < widget->ObjectsArray.size(); id++) {
         if (widget->ObjectsArray.at(id)->GetName() == name) break;
     }
-    DeleteObject(id);
+    DeleteObject(id);*/
 }
 void GLHandler::DeleteObject(int id)
 {
@@ -194,71 +207,73 @@ void GLHandler::DeleteObject(int id)
 
 QVector3D GLHandler::GetObjectPosition(QString name)
 {
-    int id;
+    /*int id;
 
     for (id=0; id < widget->ObjectsArray.size(); id++) {
         if (widget->ObjectsArray.at(id)->GetName() == name) break;
     }
 
-    return GetObjectPosition(id);
+    return GetObjectPosition(id);*/
 }
 QVector3D GLHandler::GetObjectPosition(int id)
 {
-    QVector3D result;
+    /*QVector3D result;
 
     if ( (id < widget->ObjectsArray.size()) & (id >=0) ) {
         result = widget->ObjectsArray[id]->GetTranslation();
     }
 
-    return result;
+    return result;*/
 }
 
 QVector3D GLHandler::GetObjectRotation(QString name)
 {
-    int id;
+    /*int id;
 
     for (id=0; id < widget->ObjectsArray.size(); id++) {
         if (widget->ObjectsArray.at(id)->GetName() == name) break;
     }
 
-    return GetObjectPosition(id);
+    return GetObjectPosition(id);*/
 }
 QVector3D GLHandler::GetObjectRotation(int id)
 {
-    QVector3D result;
+    /*QVector3D result;
 
     if ( (id < widget->ObjectsArray.size()) & (id >=0) ) {
         result = widget->ObjectsArray[id]->GetRotation();
     }
 
-    return result;
+    return result;*/
 }
 
 QVector3D GLHandler::GetObjectScale(QString name)
 {
-    int id;
+    /*int id;
 
     for (id=0; id < widget->ObjectsArray.size(); id++) {
         if (widget->ObjectsArray.at(id)->GetName() == name) break;
     }
 
-    return GetObjectPosition(id);
+    return GetObjectPosition(id);*/
 }
 QVector3D GLHandler::GetObjectScale(int id)
 {
-    QVector3D result;
+    /*QVector3D result;
 
     if ( (id < widget->ObjectsArray.size()) & (id >=0) ) {
         result =  widget->ObjectsArray[id]->GetScale();
     }
 
-    return result;
+    return result;*/
 }
 
-void GLHandler::keyPressEvent(QKeyEvent *e) {
+void GLHandler::keyPressEvent(QKeyEvent *e)
+{
     widget->keyPressEvent(e);
 }
-void GLHandler::keyReleaseEvent(QKeyEvent *e) {
+void GLHandler::keyReleaseEvent(QKeyEvent *e)
+{
     widget->keyReleaseEvent(e);
 }
 

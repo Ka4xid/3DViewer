@@ -1,22 +1,16 @@
-#include "surfacebuilder.h"
+#include "surface_builder.h"
 #include <QtConcurrentRun>
 #include <QDir>
 
 #include "mapapi.h"
 
 
-SurfaceBuilder::SurfaceBuilder(QObject *parent) : QObject(parent)
+Surface_Builder::Surface_Builder(QObject *parent) : QObject(parent)
 {
     parser = new Parser();
 
-    qRegisterMetaType< QVector<QVector3D> >("QVector<QVector3D>");
-    qRegisterMetaType< QVector<QVector2D> >("QVector<QVector2D>");
-
     connect(parser, SIGNAL(HeightsArrayReady(QVector<float>)),
             this,   SLOT(ReceiveHeightsArray(QVector<float>)) );
-
-    /*connect(this, SIGNAL(ArraysReady(QVector<QVector3D>,QVector<QVector2D>)),
-            this, SLOT(CreateObject(QVector<QVector3D>,QVector<QVector2D>)) );*/
 
     connect(this, SIGNAL(meshReady()),
             this, SLOT(CheckFlags()) );
@@ -27,14 +21,14 @@ SurfaceBuilder::SurfaceBuilder(QObject *parent) : QObject(parent)
     meshReadyFlag = 0;
 }
 
-int SurfaceBuilder::GenerateSurface(QString mtwFilePath, QString mapFilePath, uint textureScale)
+int Surface_Builder::GenerateSurface(QString mtwFilePath, QString mapFilePath, uint textureScale)
 {
     this->mapFilePath = mapFilePath;
     this->textureScale = textureScale;
 
     if ( ReadInitialData(mtwFilePath) ) {
 
-        QtConcurrent::run(this, &SurfaceBuilder::generateTexture,
+        QtConcurrent::run(this, &Surface_Builder::generateTexture,
                                 parser->Image.leftTopX,
                                 parser->Image.leftTopY,
                                 parser->Image.leftTopX + parser->Image.rowCount * parser->Image.elementMeters,
@@ -47,7 +41,7 @@ int SurfaceBuilder::GenerateSurface(QString mtwFilePath, QString mapFilePath, ui
     }
 }
 
-int SurfaceBuilder::ReadInitialData(QString mapFilePath)
+int Surface_Builder::ReadInitialData(QString mapFilePath)
 {
     if (parser->OpenFile(mapFilePath)) {
         if (parser->Parse(false)) {
@@ -57,12 +51,12 @@ int SurfaceBuilder::ReadInitialData(QString mapFilePath)
     return -1;
 }
 
-void SurfaceBuilder::ReceiveHeightsArray(QVector<float> heightsArray)
+void Surface_Builder::ReceiveHeightsArray(QVector<float> heightsArray)
 {
-    QtConcurrent::run(this, &SurfaceBuilder::FormatHeightsToMesh, heightsArray);
+    QtConcurrent::run(this, &Surface_Builder::FormatHeightsToMesh, heightsArray);
 }
 
-void SurfaceBuilder::FormatHeightsToMesh(QVector<float> heightsArray)
+void Surface_Builder::FormatHeightsToMesh(QVector<float> heightsArray)
 {
 
     // FILL POINTS CLOUD WITH 3D VECTORS
@@ -80,52 +74,106 @@ void SurfaceBuilder::FormatHeightsToMesh(QVector<float> heightsArray)
         }
 
         // TRIANGLE 1
-        pointsCloud.append(QVector3D((x) * parser->Image.elementMeters,
-                                     (y) * parser->Image.elementMeters,
-                                     heightsArray.at(i)));
-        pointsCloud.append(QVector3D((x-1) * parser->Image.elementMeters,
-                                     (y) * parser->Image.elementMeters,
-                                     heightsArray.at(i+parser->Image.colCount)));
-        pointsCloud.append(QVector3D((x) * parser->Image.elementMeters,
-                                     (y+1) * parser->Image.elementMeters,
-                                     heightsArray.at(i+1)));
+
+        // POINT 1
+        //position
+        p_Data.append( (x) * parser->Image.elementMeters );
+        p_Data.append( (y) * parser->Image.elementMeters );
+        p_Data.append( heightsArray.at(i) );
+
+        // normals
+        p_Data.append(0);
+        p_Data.append(0);
+        p_Data.append(1);
+
+        // texels
+        p_Data.append( y / parser->Image.colCount );
+        p_Data.append( x / parser->Image.rowCount );
+
+        // POINT 2
+        //position
+        p_Data.append( (x-1) * parser->Image.elementMeters );
+        p_Data.append( (y) * parser->Image.elementMeters );
+        p_Data.append( heightsArray.at(i+parser->Image.colCount) );
+
+        // normals
+        p_Data.append(0);
+        p_Data.append(0);
+        p_Data.append(1);
+
+        //texels
+        p_Data.append( y / parser->Image.colCount );
+        p_Data.append( (x-1) / parser->Image.rowCount );
+
+        // POINT 3
+        //position
+        p_Data.append( (x) * parser->Image.elementMeters );
+        p_Data.append( (y+1) * parser->Image.elementMeters );
+        p_Data.append( heightsArray.at(i+1) );
+
+        // normals
+        p_Data.append(0);
+        p_Data.append(0);
+        p_Data.append(1);
+
+        //texels
+        p_Data.append( (y+1) / parser->Image.colCount );
+        p_Data.append( x / parser->Image.rowCount );
+
 
         // TRIANGLE 2
-        pointsCloud.append(QVector3D((x) * parser->Image.elementMeters,
-                                     (y+1) * parser->Image.elementMeters,
-                                     heightsArray.at(i+1)));
-        pointsCloud.append(QVector3D((x-1) * parser->Image.elementMeters,
-                                     (y) * parser->Image.elementMeters,
-                                     heightsArray.at(i+parser->Image.colCount)));
-        pointsCloud.append(QVector3D((x-1) * parser->Image.elementMeters,
-                                     (y+1) * parser->Image.elementMeters,
-                                     heightsArray.at(i+parser->Image.colCount+1)));
 
-        for (int n=0; n<6; n++) {
-            normalsCloud.append(QVector3D(0,
-                                          0,
-                                          1) );
-        }
+        // POINT 1
+        //position
+        p_Data.append( (x) * parser->Image.elementMeters );
+        p_Data.append( (y+1) * parser->Image.elementMeters );
+        p_Data.append( heightsArray.at(i+1) );
 
+        // normals
+        p_Data.append(0);
+        p_Data.append(0);
+        p_Data.append(1);
 
+        // texels
+        p_Data.append( (y+1) / parser->Image.colCount );
+        p_Data.append( x / parser->Image.rowCount );
 
+        // POINT 2
+        //position
+        p_Data.append( (x-1) * parser->Image.elementMeters );
+        p_Data.append( (y) * parser->Image.elementMeters );
+        p_Data.append( heightsArray.at(i+parser->Image.colCount) );
 
-        textureCloud.append(QVector2D(  (float)(y / parser->Image.colCount),
-                                        (float)((x / parser->Image.rowCount)) ));
-        textureCloud.append(QVector2D(  (float)(y / parser->Image.colCount),
-                                        (float)(((x-1) / parser->Image.rowCount)) ));
-        textureCloud.append(QVector2D(  (float)((y+1) / parser->Image.colCount),
-                                        (float)((x / parser->Image.rowCount)) ));
+        // normals
+        p_Data.append(0);
+        p_Data.append(0);
+        p_Data.append(1);
 
+        //texels
+        p_Data.append( y / parser->Image.colCount );
+        p_Data.append( (x-1) / parser->Image.rowCount );
 
-        textureCloud.append(QVector2D(  (float)((y+1) / parser->Image.colCount),
-                                        (float)((x / parser->Image.rowCount))      ));
-        textureCloud.append(QVector2D(  (float)(y / parser->Image.colCount),
-                                        (float)(((x-1) / parser->Image.rowCount)) ));
-        textureCloud.append(QVector2D(  (float)((y+1) / parser->Image.colCount),
-                                        (float)(((x-1 )/ parser->Image.rowCount))  ));
+        // POINT 3
+        //position
+        p_Data.append( (x-1) * parser->Image.elementMeters );
+        p_Data.append( (y+1) * parser->Image.elementMeters );
+        p_Data.append( heightsArray.at(i+parser->Image.colCount+1) );
+
+        // normals
+        p_Data.append(0);
+        p_Data.append(0);
+        p_Data.append(1);
+
+        //texels
+        p_Data.append( (y+1) / parser->Image.colCount );
+        p_Data.append( (x-1) / parser->Image.rowCount );
 
         y += 1;
+    }
+
+    for (uint n=0; n<(p_Data.size()/8); n++ )
+    {
+        p_Indices.append(n);
     }
 
     qDebug() << "MESH READY";
@@ -134,7 +182,7 @@ void SurfaceBuilder::FormatHeightsToMesh(QVector<float> heightsArray)
     emit meshReady();
 }
 
-void SurfaceBuilder::generateTexture(double leftTopX, double leftTopY, double rightBottomX, double rightBottomY)
+void Surface_Builder::generateTexture(double leftTopX, double leftTopY, double rightBottomX, double rightBottomY)
 {
     // PANORAMA's code, I dont even know what they are doing there
     HMAP hMap = 0;
@@ -205,24 +253,22 @@ void SurfaceBuilder::generateTexture(double leftTopX, double leftTopY, double ri
     emit textureReady();
 }
 
-void SurfaceBuilder::CheckFlags()
+void Surface_Builder::CheckFlags()
 {
     if (textureReadyFlag && meshReadyFlag) {
         CreateObject();
     }
 }
 
-void SurfaceBuilder::CreateObject()
+void Surface_Builder::CreateObject()
 {
     Object_class* Map = new Object_class;
 
-    Map->SetName("Map");
-    Map->SetTranslation(QVector3D(parser->Image.leftBottomX, parser->Image.leftBottomY, 0));
-    Map->SetScale( QVector3D(1,1,1) );
-    Map->SetTexturePath(textureFilePath);
-    Map->SetNormalsArray(normalsCloud);
-    Map->SetPointsArray(pointsCloud);
-    Map->SetTexturesArray(textureCloud);
+    Map->name = "Map";
+    Map->translation = QVector3D(parser->Image.leftBottomX, parser->Image.leftBottomY, 0);
+    Map->SetPointsData(p_Data, p_Indices);
+    Map->scale = QVector3D(1,1,10);
+    Map->texturePath = textureFilePath;
 
     qDebug() << "MAP READY";
 
@@ -236,7 +282,7 @@ void SurfaceBuilder::CreateObject()
     this->deleteLater();
 }
 
-void SurfaceBuilder::CreateMTW()
+void Surface_Builder::CreateMTW()
 {
     // FOR DEBUG PURPOSES
 
@@ -247,7 +293,6 @@ void SurfaceBuilder::CreateMTW()
     hMap = mapOpenData( "/home/fuego/Podolsk/Podolsk.map" );
 
     if (hMap) {
-        qDebug() << 2;
 
         memset(&mtw, 0x0, sizeof(BUILDMTW) );
 

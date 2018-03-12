@@ -10,7 +10,6 @@
 
 Parser::Parser() : QObject()
 {
-    qRegisterMetaType< QVector<float> >("QVector<float>");
 }
 
 int Parser::OpenFile(QString path) {

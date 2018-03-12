@@ -15,49 +15,47 @@ class MyGLWidget : public QGLWidget, private QGLFunctions
 {
 
 public:
+
     MyGLWidget();
 
-    void keyPressEvent(QKeyEvent *e);                               //
-    void keyReleaseEvent(QKeyEvent *e);                             //
+    // EVENT FUNCTIONS
+    void keyPressEvent(QKeyEvent *e);
+    void keyReleaseEvent(QKeyEvent *e);
     void wheelEvent(QWheelEvent *e);
-    void mouseMoveEvent(QMouseEvent *e);                        //
-    void SetCameraPosition(float x, float y, float z);
-
+    void mouseMoveEvent(QMouseEvent *e);
 
 private:
 
-    void handleKeys();
     void initializeGL();                                // GL related functions
     void resizeGL(int width, int height);               //
     void paintGL();                                     //
+
+    void HandleKeyPresses();
     void SetPerspective(float fov, float Znear, float Zfar, float aspect);  // set perspective view
 
-    void RenderObjectsArray();                          // render objects from ObjectsArray
-
-    void RenderOcta(float m);           // render test octahedron
-    void RenderGizmo(float m);          // render navigation gizmo
-    void RenderCrosshair(float m);      // render basic crosshair
+    // RENDER FUNCTIONS
+    void RenderObjectsArray();              // render objects from ObjectsArray
+    void RenderAxes (float m);              // render navigation gizmo
 
 public:
 
-    QVector<Object_class*> ObjectsArray;     // Array of Vertex Buffer Objects with parameters
+    QVector<Object_class*> ObjectsArray;    // Array of Vertex Buffer Objects with parameters
 
+    QVector3D camera_angles;                // Camera rotation
+    QVector3D free_camera_pos;              // Free camera position
+    QVector3D orb_camera_pos;               // Orbital camera position (center of orbit)
+
+    float distaceFromCamera;                // Orbital camera distance from center
+
+    QMap<int, int> keyMap;                  // Map of currently pressed keys
 
 private:
 
-    QVector3D free_camera_pos;
-    QVector3D orb_camera_pos;
-    QVector3D camera_angles;
+    QPoint  lastPos;                        // value for tracking last mouse position
 
-    QPoint  lastPos;                // value for tracking last mouse position
-
-    bool wireframeMode;             // Wireframe drawing mode
-    float colorModel;               // Height map coloring mode
+    bool wireframeMode;                     // Wireframe drawing mode
     bool freeCamera;
 
-    float distaceFromCamera;
-
-    QMap<int, int> keyMap;          // Used for handling simlutaneous key presses
 };
 
 #endif // MYGLWIDGET_H

@@ -10,8 +10,6 @@
 #define DEGREE 57.2958
 
 #define TIMER_BASED
-//#define USE_CROSSHAIR
-//#define USE_GIZMO
 
 
 
@@ -51,7 +49,7 @@ void MyGLWidget::initializeGL()
                     (float)(this->height())) );     // setup frustum
 
 
-    glClearColor(0.7, 0.7, 0.7, 1.);                // clear background with color
+    glClearColor(0.7, 0.7, 0.7, 1);                // clear background with color
 
     initializeGLFunctions();
 }
@@ -61,7 +59,8 @@ void MyGLWidget::resizeGL(int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void MyGLWidget::handleKeys() {
+void MyGLWidget::HandleKeyPresses()
+{
 
     // MOVEMENT
     if (freeCamera) {
@@ -111,36 +110,16 @@ void MyGLWidget::handleKeys() {
 }
 
 
-
 void MyGLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear depth and color buffer
 
-    // handle key presses
-    handleKeys();
+    HandleKeyPresses();
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     glRotatef(-90, 0, 0, 1);        // Rotate system around X and Y axes (switch X and Y places)
-
-
-#ifdef USE_CROSSHAIR
-    glPushMatrix();
-        glTranslatef(0, 0, -1);
-        RenderCrosshair(0.02);
-    glPopMatrix();
-#endif
-
-#ifdef USE_GIZMO
-    glPushMatrix();
-        glTranslatef(0.60, 0,  -2);
-        glRotatef(camera_angles.y,   0, 1, 0);
-        glRotatef(camera_angle_yaw,     0, 0, 1);
-        RenderGizmo(0.15);
-    glPopMatrix();
-#endif
-
 
     // CAMERA TRANSFORMATIONS
     if (freeCamera) {
@@ -150,11 +129,8 @@ void MyGLWidget::paintGL()
 
         // RENDER OBJECTS
         glPushMatrix();
-            qglColor(Qt::white);
             RenderObjectsArray();
         glPopMatrix();
-        //
-
 
     } else {
 
@@ -165,7 +141,7 @@ void MyGLWidget::paintGL()
 
         // center of camera orbit
         glPushMatrix();
-        RenderGizmo(30);
+        RenderAxes (30);
         glPopMatrix();
 
         glTranslatef(-orb_camera_pos.x(), -orb_camera_pos.y(), -orb_camera_pos.z());
@@ -190,129 +166,8 @@ void MyGLWidget::paintGL()
 }
 
 
-
-void MyGLWidget::RenderObjectsArray() {
-
-    foreach (Object_class* currentObject, ObjectsArray) {
-
-        // OBJECT TRANSFORMATIONS
-        glPushMatrix();                     //individual matrix
-
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_NORMAL_ARRAY);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-
-        glEnable(GL_TEXTURE_2D);
-
-        currentObject->Draw();
-
-        glDisable(GL_TEXTURE_2D);
-
-        glPopMatrix();
-    }
-}
-
-
-
-void MyGLWidget::RenderOcta(float m) {
-    //OCTAHEDRON
-
-    glBegin(GL_TRIANGLES);
-
-        qglColor(Qt::red);
-
-        glVertex3f(0,-1*m,0);
-        glVertex3f(1*m,0,0);
-        glVertex3f(0,0,1*m);
-
-        qglColor(Qt::blue);
-
-        glVertex3f(-1*m,0,0);
-        glVertex3f(0,-1*m,0);
-        glVertex3f(0,0,1*m);
-
-        qglColor(Qt::red);
-
-        glVertex3f(0,1*m,0);
-        glVertex3f(-1*m,0,0);
-        glVertex3f(0,0,1*m);
-
-        qglColor(Qt::blue);
-
-        glVertex3f(1*m,0,0);
-        glVertex3f(0,1*m,0);
-        glVertex3f(0,0,1*m);
-
-        qglColor(Qt::green);
-
-        glVertex3f(1*m,0,0);
-        glVertex3f(0,-1*m,0);
-        glVertex3f(0,0,-1*m);
-
-        qglColor(Qt::red);
-
-        glVertex3f(0,-1*m,0);
-        glVertex3f(-1*m,0,0);
-        glVertex3f(0,0,-1*m);
-
-        qglColor(Qt::green);
-
-        glVertex3f(-1*m,0,0);
-        glVertex3f(0,1*m,0);
-        glVertex3f(0,0,-1*m);
-
-        qglColor(Qt::red);
-
-        glVertex3f(0,1*m,0);
-        glVertex3f(1*m,0,0);
-        glVertex3f(0,0,-1*m);
-
-    glEnd();
-}
-void MyGLWidget::RenderGizmo(float m) {
-    //COMPASS
-
-    glScalef(m,m,m);
-
-    glBegin(GL_LINES);
-
-        qglColor(Qt::red);      // X
-        glVertex3f(0,0,0);
-        glVertex3f(1,0,0);
-
-        qglColor(Qt::green);    // Y
-        glVertex3f(0,0,0);
-        glVertex3f(0,1,0);
-
-        qglColor(Qt::blue);     // Z
-        glVertex3f(0,0,0);
-        glVertex3f(0,0,1);
-
-    glEnd();
-}
-void MyGLWidget::RenderCrosshair(float m) {
-    //CROSSHAIR
-
-    glScalef(m,m,m);
-
-    glBegin(GL_LINES);
-
-        qglColor(Qt::red);
-        glVertex3f(1,0,0);
-        glVertex3f(-1,0,0);
-
-        glVertex3f(0,1,0);
-        glVertex3f(0,-1,0);
-
-    glEnd();
-}
-
-
-
 void MyGLWidget::SetPerspective(float fov, float Znear, float Zfar, float aspect)
 {
-
     float radians_fov,
           tangent,
           VPlane,
@@ -325,17 +180,6 @@ void MyGLWidget::SetPerspective(float fov, float Znear, float Zfar, float aspect
     HPlane = VPlane * aspect;
 
     glFrustum(-HPlane, HPlane, VPlane, -VPlane, Znear, Zfar);
-}
-
-void MyGLWidget::SetCameraPosition(float x, float y, float z)
-{
-    free_camera_pos.setX(x);
-    free_camera_pos.setY(y);
-    free_camera_pos.setZ(z);
-
-    orb_camera_pos.setX(x);
-    orb_camera_pos.setY(y);
-    orb_camera_pos.setZ(z);
 }
 
 void MyGLWidget::keyPressEvent(QKeyEvent *e)
@@ -352,11 +196,6 @@ void MyGLWidget::keyReleaseEvent(QKeyEvent *e)
         } else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
-        return;
-    }
-    if ( e->key() == Qt::Key_F2 ) {
-        colorModel+=1;
-        if (colorModel >1 ) colorModel = 0;
         return;
     }
     if ( e->key() == Qt::Key_F3 ) {
@@ -379,7 +218,6 @@ void MyGLWidget::wheelEvent(QWheelEvent *e)
     if (e->delta() < 0) {
         distaceFromCamera += 1 + distaceFromCamera/2;
     }
-    qDebug() <<distaceFromCamera;
 }
 
 void MyGLWidget::mouseMoveEvent(QMouseEvent *e)
@@ -420,3 +258,33 @@ void MyGLWidget::mouseMoveEvent(QMouseEvent *e)
 }
 
 
+void MyGLWidget::RenderObjectsArray()
+{
+
+    foreach (Object_class* currentObject, ObjectsArray) {
+        glPushMatrix();
+        currentObject->Draw();
+        glPopMatrix();
+    }
+}
+
+void MyGLWidget::RenderAxes (float m)
+{
+    glScalef(m,m,m);
+
+    glBegin(GL_LINES);
+
+        qglColor(Qt::red);      // X
+        glVertex3f(0,0,0);
+        glVertex3f(1,0,0);
+
+        qglColor(Qt::green);    // Y
+        glVertex3f(0,0,0);
+        glVertex3f(0,1,0);
+
+        qglColor(Qt::blue);     // Z
+        glVertex3f(0,0,0);
+        glVertex3f(0,0,1);
+
+    glEnd();
+}
