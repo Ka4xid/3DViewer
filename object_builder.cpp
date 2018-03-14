@@ -1,8 +1,8 @@
 #include "object_builder.h"
+#include <QFileInfo>
 
-Object_Builder::Object_Builder(QGLWidget* GLWidget)
+Object_Builder::Object_Builder()
 {
-    this->GLWidget = GLWidget;
     newObject = new Object_class;
 }
 
@@ -54,7 +54,8 @@ Object_Builder* Object_Builder::SetShaderValues(QMap<QString, float> newShaderVa
 }
 Object_Builder* Object_Builder::SetTexturePath(QString newTexturePath)
 {
-    newObject->texturePath = newTexturePath;
+    QFileInfo file(newTexturePath);
+    file.exists() ? newObject->texturePath = newTexturePath : 0;
     return this;
 }
 Object_Builder* Object_Builder::SetModelFile(QString newFilePath)
@@ -68,7 +69,7 @@ void Object_Builder::Build()
     ply_parser* Parser = new ply_parser(fileToParsePath);
 
     QObject::connect(Parser, SIGNAL(DataReady(QVector<float>,QVector<uint>)),
-            this, SLOT(SetPointsData(QVector<float>,QVector<uint>)));
+            this, SLOT(SetPointsData(QVector<float>,QVector<uint>)), Qt::QueuedConnection );
     QObject::connect(Parser, SIGNAL(ReadComplete()),
             this, SLOT(Done()), Qt::QueuedConnection );
 

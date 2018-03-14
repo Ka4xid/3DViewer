@@ -43,11 +43,13 @@ public:
 
     QMap<QString, float> shaderValues;
 
+    float objectTime;
+
 
 private:
     void CompileShader();
 
-    // QT crutch, because this functions are not implemented in QOpenGlFunctions
+    // Kludge, because this functions are not implemented in QOpenGlFunctions
     _glGenVertexArrays glGenVertexArrays = NULL;
     _glBindVertexArray glBindVertexArray = NULL;
 

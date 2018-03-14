@@ -9,11 +9,9 @@ class Object_Builder : public QObject
 {
     Q_OBJECT
 public:
-    Object_Builder(QGLWidget* GLWidget);
+    Object_Builder();
 
     Object_class* GetObject();
-
-    void ReadFile(QString filePath);
 
 public slots:
     Object_Builder* SetName(QString name);
@@ -30,10 +28,10 @@ public slots:
     Object_Builder* SetModelFile(QString newFilePath);
     void Build();
 
+private slots:
     void Done();
 
 private:
-    QGLWidget* GLWidget;
     QString fileToParsePath;
     Object_class* newObject;
 

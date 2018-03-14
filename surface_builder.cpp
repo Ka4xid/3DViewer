@@ -171,7 +171,7 @@ void Surface_Builder::FormatHeightsToMesh(QVector<float> heightsArray)
         y += 1;
     }
 
-    for (uint n=0; n<(p_Data.size()/8); n++ )
+    for (uint n=0; n<(uint)(p_Data.size()/8); n++ )
     {
         p_Indices.append(n);
     }
@@ -267,14 +267,15 @@ void Surface_Builder::CreateObject()
     Map->name = "Map";
     Map->translation = QVector3D(parser->Image.leftBottomX, parser->Image.leftBottomY, 0);
     Map->SetPointsData(p_Data, p_Indices);
-    Map->scale = QVector3D(1,1,10);
+    Map->scale = QVector3D(1,1,1);
+    Map->shaderPath = ":3D_viewer/Shaders/working";
     Map->texturePath = textureFilePath;
 
     qDebug() << "MAP READY";
 
     emit SetCameraPos(parser->Image.leftBottomX + (parser->Image.rowCount * parser->Image.elementMeters / 2),
                       parser->Image.leftBottomY + (parser->Image.colCount * parser->Image.elementMeters / 2),
-                      parser->Image.minHeight);
+                      parser->Image.minHeight + (parser->Image.maxHeight - parser->Image.minHeight)/2 );
 
     emit SurfaceReady(Map);
 

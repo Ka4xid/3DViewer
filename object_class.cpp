@@ -1,5 +1,6 @@
 #include "object_class.h"
-
+#include <qmath.h>
+#include <QDateTime>
 
 Object_class::Object_class(QObject *parent) : QObject(parent)
 {
@@ -32,12 +33,14 @@ Object_class::Object_class(QObject *parent) : QObject(parent)
 
     this->shader = new QGLShaderProgram(this);
     this->shader->addShaderFromSourceFile(QGLShader::Vertex,
-                                 QString("%1.%2").arg(":/3D_viewer/Shaders/default", "vert"));
+                                 QString(":/3D_viewer/Shaders/default.vert"));
     this->shader->addShaderFromSourceFile(QGLShader::Fragment,
-                                 QString("%1.%2").arg(":/3D_viewer/Shaders/default", "frag"));
+                                 QString(":/3D_viewer/Shaders/default.frag"));
     this->shader->link();
 
     this->shaderValues = QMap<QString, float>();
+
+    this->objectTime;
 }
 
 void Object_class::SetPointsData(QVector<float> p_Data,
@@ -56,9 +59,9 @@ void Object_class::CompileShader()
     this->shader->removeAllShaders();
 
     this->shader->addShaderFromSourceFile(QGLShader::Vertex,
-                                          QString(":%1.%2").arg(this->shaderPath, "vert")) ? (result++) : 0;
+                                          QString("%1.%2").arg(this->shaderPath, "vert")) ? (result++) : 0;
     this->shader->addShaderFromSourceFile(QGLShader::Fragment,
-                                          QString(":%1.%2").arg(this->shaderPath, "frag")) ? (result++) : 0;
+                                          QString("%1.%2").arg(this->shaderPath, "frag")) ? (result++) : 0;
     this->shader->link() ? (result++) : 0;
 
     // IF COMPILATION FAILED
@@ -67,9 +70,9 @@ void Object_class::CompileShader()
         qDebug() << "Shader compilation failed, using default shader";
         this->shader->removeAllShaders();        
         this->shader->addShaderFromSourceFile(QGLShader::Vertex,
-                                     QString(":%1.%2").arg("/3D_viewer/Shaders/default", "vert"));
+                                     QString(":/3D_viewer/Shaders/default.vert"));
         this->shader->addShaderFromSourceFile(QGLShader::Fragment,
-                                     QString(":%1.%2").arg("/3D_viewer/Shaders/default", "frag"));
+                                     QString(":/3D_viewer/Shaders/default.frag"));
         this->shader->link();
     }
 }
@@ -86,7 +89,9 @@ void Object_class::Delete()
 
 void Object_class::Initialize(QGLWidget *context)
 {
-    texture = context->bindTexture(QImage(texturePath), GL_TEXTURE_2D);
+    CompileShader();
+
+    texture = context->bindTexture(texturePath, GL_TEXTURE_2D);
 
     glGenVertexArrays = (_glGenVertexArrays)context->context()->getProcAddress("glGenVertexArrays");
     glBindVertexArray = (_glBindVertexArray)context->context()->getProcAddress("glBindVertexArray");
@@ -146,6 +151,12 @@ void Object_class::Draw()
     // Object rendering
     this->shader->bind();
 
+    this->shader->setAttributeValue("time", objectTime);
+
+    foreach (QString key, this->shaderValues.keys()) {
+        this->shader->setAttributeValue(key.toUtf8().constData(), this->shaderValues.value(key, 0) );
+    }
+
     glBindTexture(GL_TEXTURE_2D, texture);
 
     glBindVertexArray(VAO);
@@ -153,4 +164,6 @@ void Object_class::Draw()
     glBindVertexArray(0);
 
     this->shader->release();
+
+    objectTime+=0.1;
 }
