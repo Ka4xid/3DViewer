@@ -1,6 +1,7 @@
 #include "surface_builder.h"
 #include <QtConcurrentRun>
 #include <QDir>
+#include <QDateTime>
 
 #include "mapapi.h"
 
@@ -33,7 +34,6 @@ int Surface_Builder::GenerateSurface(QString mtwFilePath, QString mapFilePath, u
                                 parser->Image.leftTopY,
                                 parser->Image.leftTopX + parser->Image.rowCount * parser->Image.elementMeters,
                                 parser->Image.leftTopY + parser->Image.colCount * parser->Image.elementMeters );
-
         QtConcurrent::run(parser, &Parser::GetlHeightsArray);
         return  1;
     } else {
@@ -268,14 +268,14 @@ void Surface_Builder::CreateObject()
     Map->translation = QVector3D(parser->Image.leftBottomX, parser->Image.leftBottomY, 0);
     Map->SetPointsData(p_Data, p_Indices);
     Map->scale = QVector3D(1,1,1);
-    Map->shaderPath = ":3D_viewer/Shaders/working";
+    Map->shaderPath = ":3D_viewer/Shaders/default";
     Map->texturePath = textureFilePath;
 
     qDebug() << "MAP READY";
 
-    emit SetCameraPos(parser->Image.leftBottomX + (parser->Image.rowCount * parser->Image.elementMeters / 2),
-                      parser->Image.leftBottomY + (parser->Image.colCount * parser->Image.elementMeters / 2),
-                      parser->Image.minHeight + (parser->Image.maxHeight - parser->Image.minHeight)/2 );
+    emit SetCameraPos(QVector3D(parser->Image.leftBottomX + (parser->Image.rowCount * parser->Image.elementMeters / 2),
+                                parser->Image.leftBottomY + (parser->Image.colCount * parser->Image.elementMeters / 2),
+                                parser->Image.minHeight + (parser->Image.maxHeight - parser->Image.minHeight)/2) );
 
     emit SurfaceReady(Map);
 
@@ -299,8 +299,8 @@ void Surface_Builder::CreateMTW()
 
         double x1, y1, x2, y2;
 
-        x1 = 6134135; //mapGetMapX1(hMap);
-        y1 = 7404041; //mapGetMapY1(hMap);
+        x1 = mapGetMapX1(hMap);
+        y1 = mapGetMapY1(hMap);
         x2 = mapGetMapX2(hMap);
         y2 = mapGetMapY2(hMap);
 

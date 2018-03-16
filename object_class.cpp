@@ -40,7 +40,7 @@ Object_class::Object_class(QObject *parent) : QObject(parent)
 
     this->shaderValues = QMap<QString, float>();
 
-    this->objectTime;
+    this->objectTime = 0;
 }
 
 void Object_class::SetPointsData(QVector<float> p_Data,
@@ -86,7 +86,6 @@ void Object_class::Delete()
     delete this;
 }
 
-
 void Object_class::Initialize(QGLWidget *context)
 {
     CompileShader();
@@ -107,7 +106,7 @@ void Object_class::Initialize(QGLWidget *context)
         this->vertexIndices->allocate( p_Indices.constData(), p_Indices.size() * sizeof(uint) );
         this->p_Indices.clear();
 
-        // Position
+        // Positions
         int pos_location = this->shader->attributeLocation("Vert_Pos");
         if (pos_location != -1)
         {

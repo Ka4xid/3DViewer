@@ -1,13 +1,8 @@
 #include "glhandler.h"
-#include <QDebug>
 #include <qmath.h>
 #include <QQuaternion>
 
 #include "surface_builder.h"
-
-
-
-#define DEBUG_OUTPUT
 
 GLHandler::GLHandler(QObject *parent) : QObject(parent)
 {
@@ -22,18 +17,18 @@ QWidget* GLHandler::GetWidgetPointer() {
     return widget;
 }
 
-void GLHandler::SetCameraPosition(float x, float y, float z)
+void GLHandler::SetCameraPosition(QVector3D newPosition)
 {
-    widget->free_camera_pos = QVector3D(x,y,z);
-    widget->orb_camera_pos = QVector3D(x,y,z);
+    widget->free_camera_pos = newPosition;
+    widget->orb_camera_pos = newPosition;
 }
 
 int GLHandler::BuildSurface(QString mtwFilePath, QString mapFilePath, uint textureScale)
 {
     Surface_Builder* builder = new Surface_Builder(this);
 
-    connect(builder, SIGNAL(SetCameraPos(float,float,float)),
-            this, SLOT(SetCameraPosition(float,float,float)));
+    connect(builder, SIGNAL(SetCameraPos(QVector3D)),
+            this, SLOT(SetCameraPosition(QVector3D)) );
     connect(builder, SIGNAL(SurfaceReady(Object_class*)),
             this, SLOT(AddObjectToScene(Object_class*)) );
 
@@ -100,6 +95,7 @@ QVector3D GLHandler::GetObjectTranslation(QString name)
             return object->translation;
         }
     }
+    return QVector3D(-1,-1,-1);
 }
 QVector3D GLHandler::GetObjectRotation(QString name)
 {
@@ -108,6 +104,7 @@ QVector3D GLHandler::GetObjectRotation(QString name)
             return object->rotation;
         }
     }
+    return QVector3D(-1,-1,-1);
 }
 QVector3D GLHandler::GetObjectScale(QString name)
 {
@@ -116,6 +113,7 @@ QVector3D GLHandler::GetObjectScale(QString name)
             return object->scale;
         }
     }
+    return QVector3D(-1,-1,-1);
 }
 
 void GLHandler::MoveObjectByDir(QString name, QVector3D vector)

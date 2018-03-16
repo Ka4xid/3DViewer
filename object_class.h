@@ -18,7 +18,6 @@ class Object_class : public QObject, private QGLFunctions
 public:
     Object_class(QObject *parent = 0);
 
-
     void SetPointsData(QVector<float> p_Data,
                        QVector<uint> p_Indices );
 
@@ -43,16 +42,13 @@ public:
 
     QMap<QString, float> shaderValues;
 
-    float objectTime;
-
 
 private:
     void CompileShader();
 
-    // Kludge, because this functions are not implemented in QOpenGlFunctions
+    // Kludge, because this functions are not implemented in QOpenGlFunctions version 4.8
     _glGenVertexArrays glGenVertexArrays = NULL;
     _glBindVertexArray glBindVertexArray = NULL;
-
 
     GLuint VAO;
     QGLBuffer* vertexData;
@@ -63,10 +59,11 @@ private:
 
     uint numberOfPoints;
 
-
     QGLShaderProgram *shader;
 
     GLuint texture;
+
+    float objectTime;
 };
 
 #endif // OBJECT_CLASS_H

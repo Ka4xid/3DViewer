@@ -44,7 +44,7 @@ void MyGLWidget::initializeGL()
 
 
     glMatrixMode(GL_PROJECTION);                    // switch matrix to PROJECTION
-    SetPerspective(50, 1, 100000,
+    SetPerspective(50, 3, 100000,
                    ((float)(this->width()) /
                     (float)(this->height())) );     // setup frustum
 
@@ -113,7 +113,7 @@ void MyGLWidget::HandleKeyPresses()
 void MyGLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear depth and color buffer
-
+    glScalef(0.1, 0.1, 0.1);                            // To fix Z-Fighting in thin objects
     HandleKeyPresses();
 
     glMatrixMode(GL_MODELVIEW);

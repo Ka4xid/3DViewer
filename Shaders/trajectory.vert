@@ -4,9 +4,10 @@
 in vec3 Vert_Pos;
 in vec3 Vert_Normal;
 in vec2 Vert_Texel;
+in float time;
 
 out vec2 Vert_uv;
-out vec3 Normal;
+out float t_time;
 
 void main()
 {
@@ -14,5 +15,5 @@ void main()
 
     Vert_uv = vec2(Vert_Texel);
 
-    Normal = Vert_Normal;
+    t_time = time;
 }

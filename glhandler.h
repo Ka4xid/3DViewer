@@ -45,7 +45,7 @@ public slots:
 
     void AddObjectToScene(Object_class* newObject);
 
-    void SetCameraPosition(float x, float y, float z);
+    void SetCameraPosition(QVector3D newPosition);
 
 
 private:

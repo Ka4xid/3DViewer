@@ -36,12 +36,7 @@ void ply_parser::ReadData()
 
         if (RegExpData.exactMatch(line)) {
             for (int n=1; n<=8; n++) {
-
-                //
-                if (n==2) {
-                    verticesData.append( RegExpData.cap(n).toFloat()*-1 );
-                    continue;
-                }
+                // REMEMBER TO SCALE -1 MODEL IN YOUR EDITOR
                 verticesData.append( RegExpData.cap(n).toFloat() );
             }
         }

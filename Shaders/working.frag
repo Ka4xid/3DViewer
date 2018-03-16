@@ -11,6 +11,5 @@ out vec4 outColor;
 
 void main()
 {
-    //vec4(Vert_normal, 1)
-    outColor = texture2D(texture, Vert_uv) * Normal.z;
+    outColor = texture2D(texture, Vert_uv) * clamp(((Normal.z+1)/2), 0.2, 1);
 }

@@ -23,7 +23,7 @@ signals:
     //void TextureReady(QString textureFilePath);
 
     void SurfaceReady(Object_class* Object);
-    void SetCameraPos(float x, float y, float z);
+    void SetCameraPos(QVector3D newPosition);
     void meshReady();
     void textureReady();
 
