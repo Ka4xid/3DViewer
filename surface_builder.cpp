@@ -65,6 +65,55 @@ void Surface_Builder::FormatHeightsToMesh(QVector<float> heightsArray)
 
     x = parser->Image.rowCount;  // because points start from left-top corner of map
 
+    qDebug() << parser->Image.rowCount << "*" << parser->Image.colCount;
+
+    // FIL ARRAY WITH UNIQUE POINTS
+    foreach (float point_height, heightsArray) {
+
+        if (y > parser->Image.colCount-1 ) {
+            y = 0;
+            x -= 1;
+        }
+
+        // position
+        p_Data.append( x * parser->Image.elementMeters );
+        p_Data.append( y * parser->Image.elementMeters );
+        p_Data.append( point_height );
+        // normals
+        p_Data.append( 0 );
+        p_Data.append( 0 );
+        p_Data.append( 1 );
+        // texels
+        p_Data.append( y / parser->Image.colCount );
+        p_Data.append( x / parser->Image.rowCount );
+
+        y += 1;
+    }
+    qDebug() << p_Data.size();
+    uint q=0;
+
+    for (uint n=0; n<(p_Data.size()/8-parser->Image.colCount); n++)
+    {
+        if (q == parser->Image.colCount-1)
+        {
+            q=0;
+            continue;
+        }
+
+        p_Indices.append(n);
+        p_Indices.append(n + 1);
+        p_Indices.append(n + parser->Image.colCount);
+
+        p_Indices.append(n+1);
+        p_Indices.append(n + parser->Image.colCount);
+        p_Indices.append(n + parser->Image.colCount+1);
+
+        q++;
+    }
+    qDebug() << q;
+//    qDebug() << p_Indices;
+
+    /*
     for (uint i=0; i < heightsArray.size()-parser->Image.colCount-1; i++) {
 
         if (y >= parser->Image.colCount-1 ) {
@@ -170,11 +219,10 @@ void Surface_Builder::FormatHeightsToMesh(QVector<float> heightsArray)
 
         y += 1;
     }
-
     for (uint n=0; n<(uint)(p_Data.size()/8); n++ )
     {
         p_Indices.append(n);
-    }
+    }*/
 
     qDebug() << "MESH READY";
 
@@ -265,7 +313,7 @@ void Surface_Builder::CreateObject()
     Object_class* Map = new Object_class;
 
     Map->name = "Map";
-    Map->translation = QVector3D(parser->Image.leftBottomX, parser->Image.leftBottomY, 0);
+    //Map->translation = QVector3D(parser->Image.leftBottomX, parser->Image.leftBottomY, 0);
     Map->SetPointsData(p_Data, p_Indices);
     Map->scale = QVector3D(1,1,1);
     Map->shaderPath = ":3D_viewer/Shaders/default";
@@ -273,9 +321,9 @@ void Surface_Builder::CreateObject()
 
     qDebug() << "MAP READY";
 
-    emit SetCameraPos(QVector3D(parser->Image.leftBottomX + (parser->Image.rowCount * parser->Image.elementMeters / 2),
+    /*emit SetCameraPos(QVector3D(parser->Image.leftBottomX + (parser->Image.rowCount * parser->Image.elementMeters / 2),
                                 parser->Image.leftBottomY + (parser->Image.colCount * parser->Image.elementMeters / 2),
-                                parser->Image.minHeight + (parser->Image.maxHeight - parser->Image.minHeight)/2) );
+                                parser->Image.minHeight + (parser->Image.maxHeight - parser->Image.minHeight)/2) );*/
 
     emit SurfaceReady(Map);
 
