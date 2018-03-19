@@ -22,8 +22,8 @@ private slots:
 
 private:
     void BuildTrajectory();
-    void CreateQuadsForPoints(QVector3D point0, QVector3D point1,
-                              QVector3D point2, QVector3D point3);
+    void CreateQuadsForPoints(QVector3D point_prev, QVector3D point,
+                              QVector3D point_next);
     uint radius;
 
     Object_class* newObject;
@@ -32,6 +32,7 @@ private:
     QVector<float> p_Data;
     QVector<uint> p_Indices;
 
+    int even;
 
 signals:
     void ObjectReady(Object_class* Object);
