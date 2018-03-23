@@ -17,13 +17,13 @@ Object_class::Object_class(QObject *parent) : QObject(parent)
     this->vertexData = new QGLBuffer(QGLBuffer::VertexBuffer);
     this->vertexData->create();
     this->vertexData->bind();
-    this->vertexData->setUsagePattern(QGLBuffer::StaticDraw);
+    this->vertexData->setUsagePattern(QGLBuffer::DynamicDraw);
     this->vertexData->release();
 
     this->vertexIndices = new QGLBuffer(QGLBuffer::IndexBuffer);
     this->vertexIndices->create();
     this->vertexIndices->bind();
-    this->vertexIndices->setUsagePattern(QGLBuffer::StaticDraw);
+    this->vertexIndices->setUsagePattern(QGLBuffer::DynamicDraw);
     this->vertexIndices->release();
     //
 
@@ -32,11 +32,6 @@ Object_class::Object_class(QObject *parent) : QObject(parent)
     this->shaderPath = ":/3D_viewer/Shaders/default";
 
     this->shader = new QGLShaderProgram(this);
-    this->shader->addShaderFromSourceFile(QGLShader::Vertex,
-                                 QString(":/3D_viewer/Shaders/default.vert"));
-    this->shader->addShaderFromSourceFile(QGLShader::Fragment,
-                                 QString(":/3D_viewer/Shaders/default.frag"));
-    this->shader->link();
 
     this->shaderValues = QMap<QString, float>();
 
@@ -79,11 +74,15 @@ void Object_class::CompileShader()
 
 void Object_class::Delete()
 {
-    // FIXME
+    this->vertexData->destroy();
+    this->vertexIndices->destroy();
 
-    delete this->shader;
+    delete this->vertexData;
+    delete this->vertexIndices;
 
-    delete this;
+    this->shader->deleteLater();
+
+    this->deleteLater();
 }
 
 void Object_class::Initialize(QGLWidget *context)
@@ -94,6 +93,7 @@ void Object_class::Initialize(QGLWidget *context)
 
     glGenVertexArrays = (_glGenVertexArrays)context->context()->getProcAddress("glGenVertexArrays");
     glBindVertexArray = (_glBindVertexArray)context->context()->getProcAddress("glBindVertexArray");
+    glDeleteVertexArrays = (_glDeleteVertexArrays)context->context()->getProcAddress("glDeleteVertexArrays");
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -151,6 +151,7 @@ void Object_class::Draw()
     this->shader->bind();
 
     this->shader->setAttributeValue("time", objectTime);
+    this->shader->setAttributeValue("Obj_Pos", this->translation);
 
     foreach (QString key, this->shaderValues.keys()) {
         this->shader->setAttributeValue(key.toUtf8().constData(), this->shaderValues.value(key, 0) );

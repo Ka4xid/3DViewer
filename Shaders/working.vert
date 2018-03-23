@@ -4,20 +4,23 @@
 in vec3 Vert_Pos;
 in vec3 Vert_Normal;
 in vec2 Vert_Texel;
+in vec3 Obj_Pos;
 in float time;
 
 out vec2 Vert_uv;
 out vec3 Normal;
 
-varying vec4 Pos;
+out vec3 Pos;
+out vec3 V_Pos;
 
 
 void main()
 {
-    //Pos = vec4(Vert_Pos.x, Vert_Pos.y, Vert_Pos.z  * (0.5 + (sin(Vert_Pos.x+time)/2)), 1);
-    Pos = vec4(Vert_Pos + Vert_Normal*(clamp(sin(time*3), 0, 1)),1 );
+    //gl_ProjectionMatrix
+    gl_Position = gl_ModelViewProjectionMatrix * vec4(Vert_Pos,1);
 
-    gl_Position = gl_ModelViewProjectionMatrix * Pos;
+    V_Pos = Vert_Pos;
+    Pos = Obj_Pos;
 
     Vert_uv = vec2(Vert_Texel);
 

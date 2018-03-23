@@ -10,7 +10,7 @@
 
 typedef void (APIENTRY *_glGenVertexArrays)(GLsizei, GLuint*);
 typedef void (APIENTRY *_glBindVertexArray)(GLuint);
-
+typedef void (APIENTRY *_glDeleteVertexArrays)(GLsizei, GLuint*);
 
 class Object_class : public QObject, private QGLFunctions
 {
@@ -49,6 +49,8 @@ private:
     // Kludge, because this functions are not implemented in QOpenGlFunctions version 4.8
     _glGenVertexArrays glGenVertexArrays = NULL;
     _glBindVertexArray glBindVertexArray = NULL;
+    _glDeleteVertexArrays glDeleteVertexArrays = NULL;
+
 
     GLuint VAO;
     QGLBuffer* vertexData;
