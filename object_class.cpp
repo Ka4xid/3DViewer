@@ -1,6 +1,6 @@
 #include "object_class.h"
-#include <QGLWidget>
-
+#include <qmath.h>
+#include <QDateTime>
 
 Object_class::Object_class(QObject *parent) : QObject(parent)
 {
@@ -12,202 +12,129 @@ Object_class::Object_class(QObject *parent) : QObject(parent)
     this->scale = QVector3D(1,1,1);
 
     this->polygonType = GL_TRIANGLES;
+    this->numberOfPoints = 0;
 
-    // ESTABLISH BUFFERS;
-    this->pointsCloud = new QGLBuffer(QGLBuffer::VertexBuffer);
-    this->pointsCloud->create();
-    this->pointsCloud->bind();
-    this->pointsCloud->setUsagePattern(QGLBuffer::DynamicDraw);
-    this->pointsCloud->release();
+    this->vertexData = new QGLBuffer(QGLBuffer::VertexBuffer);
+    this->vertexData->create();
+    this->vertexData->bind();
+    this->vertexData->setUsagePattern(QGLBuffer::DynamicDraw);
+    this->vertexData->release();
 
-    this->normalsCloud = new QGLBuffer(QGLBuffer::VertexBuffer);
-    this->normalsCloud->create();
-    this->normalsCloud->bind();
-    this->normalsCloud->setUsagePattern(QGLBuffer::DynamicDraw);
-    this->normalsCloud->release();
+    this->vertexIndices = new QGLBuffer(QGLBuffer::IndexBuffer);
+    this->vertexIndices->create();
+    this->vertexIndices->bind();
+    this->vertexIndices->setUsagePattern(QGLBuffer::DynamicDraw);
+    this->vertexIndices->release();
+    //
 
-    this->textureCloud = new QGLBuffer(QGLBuffer::VertexBuffer);
-    this->textureCloud->create();
-    this->textureCloud->bind();
-    this->textureCloud->setUsagePattern(QGLBuffer::DynamicDraw);
-    this->textureCloud->release();
+    this->texturePath = ":/3D_viewer/checker.png";
 
-    this->texturePath = ":/3D_viewer/chkr.png";
-
-#ifdef USE_SHADERS
-    this->shaderPath = "/3D_viewer/Shaders/default";
+    this->shaderPath = ":/3D_viewer/Shaders/default";
 
     this->shader = new QGLShaderProgram(this);
 
-    this->shader->addShaderFromSourceFile(QGLShader::Vertex,
-                                 QString(":%1.%2").arg("/3D_viewer/Shaders/default", "vert"));
-    this->shader->addShaderFromSourceFile(QGLShader::Fragment,
-                                 QString(":%1.%2").arg("/3D_viewer/Shaders/default", "frag"));
-    this->shader->bindAttributeLocation("texture_coord", this->textureCloud->bufferId());
-    this->shader->link();
-
     this->shaderValues = QMap<QString, float>();
-#endif
 
-
-
-
+    this->objectTime = 0;
 }
 
-
-void Object_class::SetName(QString newName)
+void Object_class::SetPointsData(QVector<float> p_Data,
+                                 QVector<uint> p_Indices )
 {
-    this->name = newName;
-}
-QString Object_class::GetName()
-{
-    return this->name;
-}
+    this->p_Data = p_Data;
+    this->p_Indices = p_Indices;
 
-void Object_class::SetTranslation(QVector3D newTranslation, bool relatively)
-{
-    if (relatively) {
-        this->translation += newTranslation;
-    } else {
-        this->translation = newTranslation;
-    }
-
-}
-QVector3D Object_class::GetTranslation()
-{
-    return translation;
+    this->numberOfPoints = p_Indices.size();
 }
 
-void Object_class::SetRotation(QVector3D newRotation, bool relatively)
-{
-    if (relatively) {
-        this->rotation += newRotation;
-    } else {
-        this->rotation = newRotation;
-    }
-}
-QVector3D Object_class::GetRotation()
-{
-    return this->rotation;
-}
-
-void Object_class::SetScale(QVector3D newScale, bool relatively)
-{
-    if (relatively) {
-        this->scale += newScale;
-    } else {
-        this->scale = newScale;
-    }
-}
-QVector3D Object_class::GetScale()
-{
-    return this->scale;
-}
-
-void Object_class::SetPolygonType(uint newPolygonType)
-{
-    this->polygonType = newPolygonType;
-}
-uint Object_class::GetPolygonType()
-{
-    return this->polygonType;
-}
-
-void Object_class::SetPointsArray(QVector<QVector3D> newPointsVectors)
-{
-    QVector<float> tempPointsArray;
-    numberOfPoints = newPointsVectors.size();
-
-    foreach (QVector3D point, newPointsVectors) {
-        tempPointsArray.append(point.x());
-        tempPointsArray.append(point.y());
-        tempPointsArray.append(point.z());
-    }
-
-    this->pointsCloud->bind();
-    this->pointsCloud->allocate( tempPointsArray.size() * sizeof(float) );
-    this->pointsCloud->write(0, tempPointsArray.data(), tempPointsArray.size() * sizeof(float));
-    this->pointsCloud->release();
-}
-
-void Object_class::SetNormalsArray(QVector<QVector3D> newNormalsVectors)
-{
-    QVector<float> tempNormalsArray;
-
-    foreach (QVector3D normal, newNormalsVectors) {
-        tempNormalsArray.append(normal.x());
-        tempNormalsArray.append(normal.y());
-        tempNormalsArray.append(normal.z());
-    }
-
-    this->normalsCloud->bind();
-    this->normalsCloud->allocate( tempNormalsArray.size() * sizeof(float));
-    this->normalsCloud->write(0, tempNormalsArray.data(), tempNormalsArray.size() * sizeof(float));
-    this->normalsCloud->release();
-}
-
-void Object_class::SetTexturesArray(QVector<QVector2D> newTextureVectors)
-{
-    QVector<float> tempTexturesArray;
-
-    texcoords = newTextureVectors;
-
-    foreach (QVector2D textureCoord, newTextureVectors) {
-        tempTexturesArray.append(textureCoord.x());
-        tempTexturesArray.append(textureCoord.y());
-    }
-
-    this->textureCloud->bind();
-    this->textureCloud->allocate( tempTexturesArray.size() * sizeof(float) );
-    this->textureCloud->write(0, tempTexturesArray.data(), tempTexturesArray.size() * sizeof(float) );
-    this->textureCloud->release();
-}
-
-#ifdef USE_SHADERS
-void Object_class::SetShader(QString newShaderPath)
+void Object_class::CompileShader()
 {
     int result=0;
 
     this->shader->removeAllShaders();
 
     this->shader->addShaderFromSourceFile(QGLShader::Vertex,
-                                          QString(":%1.%2").arg(newShaderPath, "vert")) ? (result++) : 0;
+                                          QString("%1.%2").arg(this->shaderPath, "vert")) ? (result++) : 0;
     this->shader->addShaderFromSourceFile(QGLShader::Fragment,
-                                          QString(":%1.%2").arg(newShaderPath, "frag")) ? (result++) : 0;
+                                          QString("%1.%2").arg(this->shaderPath, "frag")) ? (result++) : 0;
     this->shader->link() ? (result++) : 0;
 
     // IF COMPILATION FAILED
     if (result!=3) {
         // USE DEFAULT SHADER
-        this->shader->removeAllShaders();
-        qDebug() << "Using default shader";
+        qDebug() << "Shader compilation failed, using default shader";
+        this->shader->removeAllShaders();        
         this->shader->addShaderFromSourceFile(QGLShader::Vertex,
-                                     QString(":%1.%2").arg("/3D_viewer/Shaders/default", "vert"));
+                                     QString(":/3D_viewer/Shaders/default.vert"));
         this->shader->addShaderFromSourceFile(QGLShader::Fragment,
-                                     QString(":%1.%2").arg("/3D_viewer/Shaders/default", "frag"));
+                                     QString(":/3D_viewer/Shaders/default.frag"));
         this->shader->link();
     }
 }
 
-void Object_class::SetShaderValue(QString valueName, float value)
+void Object_class::Delete()
 {
-    shaderValues.insert(valueName, value);
-}
-#endif
+    this->vertexData->destroy();
+    this->vertexIndices->destroy();
 
-void Object_class::SetTexturePath(QString newTexturePath)
-{
-    this->texturePath = newTexturePath;
+    delete this->vertexData;
+    delete this->vertexIndices;
+
+    this->shader->deleteLater();
+
+    this->deleteLater();
 }
 
 void Object_class::Initialize(QGLWidget *context)
 {
-    this->context = context;
-    texture = context->bindTexture(QImage(texturePath), GL_TEXTURE_2D);
+    CompileShader();
+
+    texture = context->bindTexture(texturePath, GL_TEXTURE_2D);
+
+    glGenVertexArrays = (_glGenVertexArrays)context->context()->getProcAddress("glGenVertexArrays");
+    glBindVertexArray = (_glBindVertexArray)context->context()->getProcAddress("glBindVertexArray");
+    glDeleteVertexArrays = (_glDeleteVertexArrays)context->context()->getProcAddress("glDeleteVertexArrays");
+
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+        this->vertexData->bind();
+        this->vertexData->allocate( p_Data.constData(), p_Data.size() * sizeof(float) );
+        this->p_Data.clear();
+
+        this->vertexIndices->bind();
+        this->vertexIndices->allocate( p_Indices.constData(), p_Indices.size() * sizeof(uint) );
+        this->p_Indices.clear();
+
+        // Positions
+        int pos_location = this->shader->attributeLocation("Vert_Pos");
+        if (pos_location != -1)
+        {
+            glVertexAttribPointer(pos_location, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
+            glEnableVertexAttribArray(pos_location);
+        }
+
+        // Normals
+        int normals_location = this->shader->attributeLocation("Vert_Normal");
+        if (normals_location != -1)
+        {
+            glVertexAttribPointer(normals_location, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+            glEnableVertexAttribArray(normals_location);
+        }
+
+        // Texels
+        int texels_location = this->shader->attributeLocation("Vert_Texel");
+        if (texels_location != -1) {
+            glVertexAttribPointer(texels_location, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)) );
+            glEnableVertexAttribArray(texels_location);
+        }
+
+    glBindVertexArray(0);
 }
 
 void Object_class::Draw()
 {
+    // Object transformations
     glTranslatef(this->translation.x(),
                  this->translation.y(),
                  this->translation.z() );
@@ -220,13 +147,24 @@ void Object_class::Draw()
              this->scale.y(),
              this->scale.z() );
 
+    matrix.setToIdentity();
+    matrix.translate(-this->translation);
+    matrix.rotate(this->rotation.z(), QVector3D(0,0,1));
+    matrix.rotate(this->rotation.y(), QVector3D(0,1,0));
+    //matrix.rotate(this->rotation.x(), QVector3D(1,0,0));
+    matrix = matrix.inverted();
 
-#ifdef USE_SHADERS
+    // Object rendering
     this->shader->bind();
-    this->shader->setUniformValue("texture", texture);
+
+    this->shader->setAttributeValue("time", objectTime);
+    this->shader->setUniformValue("tMatrix", matrix);
+    this->shader->setAttributeValue("Obj_Pos", this->translation);
+
     foreach (QString key, this->shaderValues.keys()) {
-        this->shader->setUniformValue( key.toUtf8().constData(), this->shaderValues.value(key, 0) );
+        this->shader->setAttributeValue(key.toUtf8().constData(), this->shaderValues.value(key, 0) );
     }
+<<<<<<< HEAD
 #endif
 
 
@@ -240,32 +178,16 @@ void Object_class::Draw()
     glTexCoordPointer(2, GL_FLOAT, 0, 0);
 
     glEnableVertexAttribArray(this->textureCloud->bufferId() );
+=======
+>>>>>>> 3DViewer/Shaders
 
     glBindTexture(GL_TEXTURE_2D, texture);
 
+    glBindVertexArray(VAO);
+    glDrawElements(this->polygonType, numberOfPoints, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 
-    glDrawArrays(this->polygonType, 0, numberOfPoints);
-
-    this->normalsCloud->release();
-    this->pointsCloud->release();
-#ifdef USE_SHADERS
     this->shader->release();
-#endif
-}
 
-void Object_class::Delete()
-{
-    this->pointsCloud->destroy();
-    delete this->pointsCloud;
-    this->normalsCloud->destroy();
-    delete this->normalsCloud;
-    this->textureCloud->destroy();
-    delete this->textureCloud;
-
-    context->deleteTexture(texture);
-#ifdef USE_SHADERS
-    delete this->shader;
-#endif
-
-    delete this;
+    objectTime+=0.1;
 }

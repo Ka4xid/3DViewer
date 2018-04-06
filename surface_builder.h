@@ -7,12 +7,12 @@
 #include "object_class.h"
 
 
-class SurfaceBuilder : public QObject
+class Surface_Builder : public QObject
 {
     Q_OBJECT
 
 public:
-    SurfaceBuilder(QObject *parent = 0);
+    Surface_Builder(QObject *parent = 0);
 
     int GenerateSurface(QString mtwFilePath, QString mapFilePath, uint textureScale = 100000 ); // Build surface mesh, based on height map
     void CreateMTW();
@@ -23,9 +23,7 @@ signals:
     //void TextureReady(QString textureFilePath);
 
     void SurfaceReady(Object_class* Object);
-
-    void SetCameraPos(float x, float y, float z);
-
+    void SetCameraPos(QVector3D newPosition);
     void meshReady();
     void textureReady();
 
@@ -33,12 +31,11 @@ signals:
 private slots:
 
     void ReceiveHeightsArray(QVector<float> heightsArray);
-
     void CreateObject();
-
     void CheckFlags();
 
 private:
+    Parser* parser;
 
     QString mapFilePath,
             textureFilePath;
@@ -47,12 +44,13 @@ private:
     QVector<QVector3D> normalsCloud;
     QVector<QVector2D> textureCloud;
 
+    QVector<float> p_Data;
+    QVector<uint> p_Indices;
+
     bool textureReadyFlag;
     bool meshReadyFlag;
 
     uint textureScale;
-
-    Parser* parser;
 
 
     int ReadInitialData(QString mapFilePath);

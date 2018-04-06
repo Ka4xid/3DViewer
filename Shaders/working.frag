@@ -1,22 +1,25 @@
 #version 130
 
 
-varying vec3 normal;
 uniform sampler2D texture;
-uniform vec2 texture_coord;
+
+uniform mat4 tMatrix;
+in vec2 Vert_uv;
+in vec3 Normal;
+
+in vec3 Pos;
+in vec3 V_Pos;
+
+out vec4 outColor;
+
 
 void main()
 {
-    //vec3 normal_normal = normalize(normal);
+    float distanceFromLight = distance( tMatrix * vec4(Pos,1) + vec4(V_Pos*10,1) ,
+                                       tMatrix * vec4(0,0,0,1) );
 
-    //gl_FragColor = vec4(normal_normal, 1.f);
-
-    gl_FragColor = texture2D(texture, texture_coord.st);
-
-    /*gl_FragColor = vec4(1 * (0.3 + sin(x*2)*0.2),
-                        0.7 * (0.3 + sin(x*2)*0.2),
-                        0.7 * (0.3 + sin(x*2)*0.2),
-                        1);*/
-
+    outColor = texture2D(texture, Vert_uv) * vec4( 1/distanceFromLight*10,
+                                                   1/distanceFromLight*10,
+                                                   1/distanceFromLight*10,
+                                                   1 );
 }
-
