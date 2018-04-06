@@ -164,22 +164,6 @@ void Object_class::Draw()
     foreach (QString key, this->shaderValues.keys()) {
         this->shader->setAttributeValue(key.toUtf8().constData(), this->shaderValues.value(key, 0) );
     }
-<<<<<<< HEAD
-#endif
-
-
-    this->pointsCloud->bind();
-    glVertexPointer(3, GL_FLOAT, 0, 0);
-
-    this->normalsCloud->bind();
-    glNormalPointer(GL_FLOAT, 0, 0);
-
-    this->textureCloud->bind();
-    glTexCoordPointer(2, GL_FLOAT, 0, 0);
-
-    glEnableVertexAttribArray(this->textureCloud->bufferId() );
-=======
->>>>>>> 3DViewer/Shaders
 
     glBindTexture(GL_TEXTURE_2D, texture);
 

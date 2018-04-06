@@ -20,7 +20,7 @@ MyGLWidget::MyGLWidget()
     QTimer *timer = new QTimer(this);
     timer->setSingleShot(false);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateGL()) );
-    timer->start(40);
+    timer->start(20);
 #endif
 
     // SET UP OPENGL SPECIFIC VALUES
