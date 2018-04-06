@@ -1,5 +1,4 @@
 #include "parser.h"
-#include "stdint.h"
 
 #define BAD_BLOCK   -10001
 #define BAD_ELEMENT -10002

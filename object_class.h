@@ -66,6 +66,8 @@ private:
     GLuint texture;
 
     float objectTime;
+
+    QMatrix4x4 matrix;
 };
 
 #endif // OBJECT_CLASS_H

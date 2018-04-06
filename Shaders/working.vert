@@ -22,7 +22,8 @@ void main()
     V_Pos = Vert_Pos;
     Pos = Obj_Pos;
 
-    Vert_uv = vec2(Vert_Texel);
 
+    // to fragment
+    Vert_uv = vec2(Vert_Texel);
     Normal = Vert_Normal;
 }

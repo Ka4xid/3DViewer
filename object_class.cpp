@@ -147,10 +147,18 @@ void Object_class::Draw()
              this->scale.y(),
              this->scale.z() );
 
+    matrix.setToIdentity();
+    matrix.translate(-this->translation);
+    matrix.rotate(this->rotation.z(), QVector3D(0,0,1));
+    matrix.rotate(this->rotation.y(), QVector3D(0,1,0));
+    //matrix.rotate(this->rotation.x(), QVector3D(1,0,0));
+    matrix = matrix.inverted();
+
     // Object rendering
     this->shader->bind();
 
     this->shader->setAttributeValue("time", objectTime);
+    this->shader->setUniformValue("tMatrix", matrix);
     this->shader->setAttributeValue("Obj_Pos", this->translation);
 
     foreach (QString key, this->shaderValues.keys()) {
